@@ -27,8 +27,23 @@ OPENAI_EMBEDDING_COSTS = {
 
 
 def get_client_model(model_name: str) -> tuple[openai.OpenAI, str]:
+    # Auto-detect Azure: if Azure env vars are present and model is OpenAI, use Azure
+    azure_env_vars_present = all([
+        os.getenv("AZURE_OPENAI_API_KEY"),
+        os.getenv("AZURE_API_VERSION"),
+        os.getenv("AZURE_API_ENDPOINT")
+    ])
+
     if model_name in OPENAI_EMBEDDING_MODELS:
-        client = openai.OpenAI()
+        # Use Azure if env vars are present, otherwise regular OpenAI
+        if azure_env_vars_present:
+            client = openai.AzureOpenAI(
+                api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+                api_version=os.getenv("AZURE_API_VERSION"),
+                azure_endpoint=os.getenv("AZURE_API_ENDPOINT"),
+            )
+        else:
+            client = openai.OpenAI()
         model_to_use = model_name
     elif model_name in AZURE_EMBEDDING_MODELS:
         # get rid of the azure- prefix

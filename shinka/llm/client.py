@@ -29,6 +29,13 @@ def get_client_llm(model_name: str, structured_output: bool = False) -> Tuple[An
     Returns:
         The client and model for the given model name.
     """
+    # Auto-detect Azure: if Azure env vars are present and model is OpenAI, use Azure
+    azure_env_vars_present = all([
+        os.getenv("AZURE_OPENAI_API_KEY"),
+        os.getenv("AZURE_API_VERSION"),
+        os.getenv("AZURE_API_ENDPOINT")
+    ])
+
     # print(f"Getting client for model {model_name}")
     if model_name in CLAUDE_MODELS.keys():
         client = anthropic.Anthropic()
@@ -48,7 +55,15 @@ def get_client_llm(model_name: str, structured_output: bool = False) -> Tuple[An
                 client, mode=instructor.mode.Mode.ANTHROPIC_JSON
             )
     elif model_name in OPENAI_MODELS.keys():
-        client = openai.OpenAI()
+        # Use Azure if env vars are present, otherwise regular OpenAI
+        if azure_env_vars_present:
+            client = openai.AzureOpenAI(
+                api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+                api_version=os.getenv("AZURE_API_VERSION"),
+                azure_endpoint=os.getenv("AZURE_API_ENDPOINT"),
+            )
+        else:
+            client = openai.OpenAI()
         if structured_output:
             client = instructor.from_openai(client, mode=instructor.Mode.TOOLS_STRICT)
     elif model_name.startswith("azure-"):

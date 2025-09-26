@@ -156,9 +156,18 @@ class EvolutionRunner:
         else:
             raise ValueError("Invalid llm_dynamic_selection")
 
+        # Initialize embedding client first
+        if evo_config.embedding_model is not None:
+            self.embedding = EmbeddingClient(
+                model_name=evo_config.embedding_model,
+                verbose=verbose,
+            )
+        else:
+            self.embedding = None
+
         # Initialize database and scheduler
         db_config.db_path = str(db_path)
-        self.db = ProgramDatabase(config=db_config)
+        self.db = ProgramDatabase(config=db_config, embedding_client=self.embedding)
         self.scheduler = JobScheduler(
             job_type=evo_config.job_type,
             config=job_config,  # type: ignore
@@ -171,13 +180,6 @@ class EvolutionRunner:
             **evo_config.llm_kwargs,
             verbose=verbose,
         )
-        if evo_config.embedding_model is not None:
-            self.embedding = EmbeddingClient(
-                model_name=evo_config.embedding_model,
-                verbose=verbose,
-            )
-        else:
-            self.embedding = None
 
         if evo_config.meta_llm_models is not None:
             self.meta_llm = LLMClient(

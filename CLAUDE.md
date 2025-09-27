@@ -4,7 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-ShinkaEvolve is a framework that combines Large Language Models (LLMs) with evolutionary algorithms for automated scientific code evolution. The system uses LLMs as intelligent mutation operators to evolve programs across generations, maintaining archives of successful solutions and supporting parallel evaluation locally or on Slurm clusters.
+ShinkaEvolve is an open-source framework that combines Large Language Models (LLMs) with evolutionary algorithms for automated scientific code evolution. The system achieves unprecedented sample efficiency by using LLMs as intelligent mutation operators to evolve programs across generations, maintaining archives of successful solutions and supporting parallel evaluation locally or on Slurm clusters.
+
+**Key Innovations:**
+- **Adaptive parent sampling** that balances exploration and exploitation
+- **Code novelty rejection-sampling** for efficient search space exploration
+- **Bandit-based LLM ensemble selection** strategy that adapts to evolving program states
+- **Sample efficiency**: Discovers state-of-the-art solutions with orders of magnitude fewer evaluations than existing approaches (e.g., 150 evaluations vs thousands)
 
 ## Core Architecture
 

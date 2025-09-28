@@ -45,6 +45,7 @@ dependencies = [
     "adjustText",
     "markdown",
     "aiofiles",
+    "tavily-python>=0.7.12",
 ]
 
 [tool.setuptools]

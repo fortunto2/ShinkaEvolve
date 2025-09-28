@@ -1,0 +1,16 @@
+evo_config:
+  _target_: shinka.core.EvolutionConfig
+  patch_types:
+    - "diff"
+    - "full"
+  patch_type_probs:
+    - 0.7
+    - 0.3
+  num_generations: 20  # Extended for overnight runs
+  max_parallel_jobs: 2  # Use more parallel jobs
+  max_patch_attempts: 10
+  llm_models:
+    - "gpt-5-mini"
+  llm_dynamic_selection: null
+  embedding_model: "text-embedding-3-small"
+  results_dir: ${output_dir}

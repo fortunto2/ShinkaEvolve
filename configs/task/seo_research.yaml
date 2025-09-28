@@ -1,0 +1,53 @@
+seo_research_test_niches:
+  - "ai generate christmas card 2026"
+  - "ai christmas card generator"
+  - "personalized christmas cards ai"
+
+evaluate_function:
+  _target_: examples.seo_research.evaluate.evaluate_seo_research_quality
+  program_path: ???
+  results_dir: ???
+  test_niches: ${seo_research_test_niches}
+  use_tavily_search: true   # Always use Tavily for real search validation
+  max_search_results: 3
+
+distributed_job_config:
+  _target_: shinka.launch.LocalJobConfig
+  eval_program_path: "shinka/eval_hydra.py"
+  timeout: 120
+
+evo_config:
+  task_sys_msg: |
+    Develop an advanced SEO research strategy that can discover profitable niches through keyword research and competitor analysis.
+
+    Your task is to evolve the `seo_research_strategy` function to:
+    1. Generate diverse, high-value keywords for any given niche (focus on low competition + good traffic potential)
+    2. Identify relevant competitor domains and websites using real search data
+    3. Create comprehensive search strategies covering different user intents (informational, commercial, transactional)
+    4. Optimize for keyword difficulty vs search volume ratio to find "sweet spot" opportunities
+    5. Consider seasonal trends, emerging technologies, and market gaps
+
+    The function should return a strategy dictionary with:
+    - primary_keywords: List of main keywords to target (mix of head, body, long-tail)
+    - competitor_domains: List of competitor websites found via search analysis
+    - search_strategies: List of search approaches for market research
+    - analysis_depth: Description of analysis approach
+
+    For AI/tech niches, focus on:
+    - Emerging trends and early adopter keywords
+    - Tool comparison keywords ("X vs Y")
+    - Problem-solution keywords ("how to create X with AI")
+    - Commercial intent keywords with buyer signals
+
+    The goal is finding underserved markets with good traffic potential but manageable competition.
+
+  language: "python"
+  init_program_path:
+    _target_: shinka.utils.add_evolve_markers
+    save_dir: ${output_dir}
+    initial_file_path: examples/seo_research/initial.py
+    insert_start: seo_research_strategy
+    insert_end: seo_research_strategy
+  job_type: "local"
+
+exp_name: "shinka_seo_research"

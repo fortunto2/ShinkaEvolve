@@ -1,0 +1,18 @@
+defaults:
+  - override /database@_global_: island_medium  # More islands for diversity
+  - override /evolution@_global_: extended_seo  # Extended evolution config
+  - override /task@_global_: seo_research
+  - override /cluster@_global_: local
+  - _self_
+
+# Override test niches for AI Christmas cards research
+seo_research_test_niches:
+  - "ai generate christmas card 2026"
+  - "ai christmas card generator"
+  - "personalized christmas cards ai"
+  - "custom christmas cards ai"
+  - "ai holiday card maker"
+  - "ai xmas card creator"
+  - "automated christmas card design"
+
+variant_suffix: "_extended"

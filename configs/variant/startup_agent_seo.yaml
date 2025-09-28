@@ -1,0 +1,49 @@
+defaults:
+  - override /database@_global_: island_small
+  - override /evolution@_global_: sgr_small_budget
+  - override /task@_global_: startup_agent
+  - override /cluster@_global_: local
+  - _self_
+
+variant_suffix: "_seo_focused"
+
+# Override evolution config for startup analysis
+evolution:
+  # Use SGR-enabled evolution with more generations for optimization
+  use_sgr: true
+  sgr_confidence_threshold: 0.7
+  sgr_fallback_to_random: false
+
+  # Increase generations for thorough evolution
+  num_generations: 15
+
+  # Model configuration
+  model_names: ["gpt-5-mini"]
+  model_selection: bandit
+
+# Database configuration for startup evolution
+database:
+  # Use smaller islands for faster iteration
+  num_islands: 2
+  island_size: 8
+  archive_size: 12
+
+  # Selection strategy optimized for quantitative analysis
+  selection_strategy: adaptive_parent_sampling
+  selection_temperature: 0.8
+
+# Task-specific overrides
+task:
+  # Extended time limit for comprehensive web research
+  eval_time_limit_seconds: 800  # 13+ minutes for full analysis
+
+  # Higher success criteria for production use
+  success_criteria:
+    min_combined_score: 0.7
+    target_combined_score: 0.85
+
+# Logging and output
+logging:
+  level: INFO
+  save_evolution_progress: true
+  save_generation_snapshots: true

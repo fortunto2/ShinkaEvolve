@@ -148,6 +148,19 @@ def run_shinka_eval(
             if all_run_results:
                 metrics["first_run_result_type"] = str(type(all_run_results[0]))
                 metrics["raw_results_preview"] = str(all_run_results[:2])
+                
+                # Extract combined_score from the first run result if it exists
+                first_result = all_run_results[0]
+                if isinstance(first_result, dict) and "metrics" in first_result:
+                    result_metrics = first_result["metrics"]
+                    if "combined_score" in result_metrics:
+                        metrics["combined_score"] = result_metrics["combined_score"]
+                    if "public" in result_metrics:
+                        metrics["public"] = result_metrics["public"]
+                    if "private" in result_metrics:
+                        metrics["private"] = result_metrics["private"]
+                    if "text_feedback" in result_metrics:
+                        metrics["text_feedback"] = result_metrics["text_feedback"]
             else:
                 metrics["first_run_result_type"] = "N/A"
                 metrics["raw_results_preview"] = "N/A"

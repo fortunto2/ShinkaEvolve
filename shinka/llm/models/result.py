@@ -17,6 +17,7 @@ class QueryResult:
         output_cost: float = 0.0,
         thought: str = "",
         model_posteriors: Optional[Dict[str, float]] = None,
+        parsed_content: Optional[object] = None,
     ):
         self.content = content
         self.msg = msg
@@ -31,6 +32,7 @@ class QueryResult:
         self.output_cost = output_cost
         self.thought = thought
         self.model_posteriors = model_posteriors or {}
+        self.parsed_content = parsed_content
 
     def to_dict(self):
         return {

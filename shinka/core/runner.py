@@ -28,6 +28,7 @@ from shinka.edit import (
     redact_immutable,
 )
 from shinka.core.sampler import PromptSampler
+from shinka.core.sgr_prompt_sampler import SGRPromptSampler
 from shinka.core.summarizer import MetaSummarizer
 from shinka.core.novelty_judge import NoveltyJudge
 from shinka.logo import print_gradient_logo
@@ -62,6 +63,10 @@ class EvolutionConfig:
     novelty_llm_models: Optional[List[str]] = None
     novelty_llm_kwargs: dict = field(default_factory=lambda: {})
     use_text_feedback: bool = False
+    # SGR (Schema-Guided Reasoning) parameters
+    use_sgr: bool = False
+    sgr_confidence_threshold: float = 0.7
+    sgr_fallback_to_random: bool = True
 
 
 @dataclass
@@ -200,13 +205,29 @@ class EvolutionRunner:
             self.novelty_llm = None
 
         # Initialize PromptSampler for handling LLM code prompts
-        self.prompt_sampler = PromptSampler(
-            task_sys_msg=evo_config.task_sys_msg,
-            language=evo_config.language,
-            patch_types=evo_config.patch_types,
-            patch_type_probs=evo_config.patch_type_probs,
-            use_text_feedback=evo_config.use_text_feedback,
-        )
+        # Use SGR if enabled in config
+        if getattr(evo_config, 'use_sgr', False):
+            self.prompt_sampler = SGRPromptSampler(
+                sgr_enabled=True,
+                sgr_confidence_threshold=getattr(evo_config, 'sgr_confidence_threshold', 0.7),
+                sgr_fallback_to_random=getattr(evo_config, 'sgr_fallback_to_random', True),
+                sgr_llm_client=self.llm,  # Use main LLM client for SGR
+                task_sys_msg=evo_config.task_sys_msg,
+                language=evo_config.language,
+                patch_types=evo_config.patch_types,
+                patch_type_probs=evo_config.patch_type_probs,
+                use_text_feedback=evo_config.use_text_feedback,
+            )
+            logger.info("🧠 SGR-enhanced PromptSampler initialized")
+        else:
+            self.prompt_sampler = PromptSampler(
+                task_sys_msg=evo_config.task_sys_msg,
+                language=evo_config.language,
+                patch_types=evo_config.patch_types,
+                patch_type_probs=evo_config.patch_type_probs,
+                use_text_feedback=evo_config.use_text_feedback,
+            )
+            logger.info("📝 Standard PromptSampler initialized")
 
         # Initialize MetaSummarizer for meta-recommendations
         self.meta_summarizer = MetaSummarizer(
@@ -354,6 +375,25 @@ class EvolutionRunner:
         self._save_meta_memory()
 
         self.db.print_summary()
+
+        # Print SGR statistics if SGR was used
+        if hasattr(self.prompt_sampler, 'get_sgr_statistics'):
+            logger.info("=" * 80)
+            logger.info("🧠 SGR (Schema-Guided Reasoning) Statistics")
+            logger.info("=" * 80)
+            sgr_stats = self.prompt_sampler.get_sgr_statistics()
+            for key, value in sgr_stats.items():
+                if isinstance(value, float):
+                    if 'rate' in key:
+                        logger.info(f"   {key}: {value:.1%}")
+                    else:
+                        logger.info(f"   {key}: {value:.3f}")
+                else:
+                    logger.info(f"   {key}: {value}")
+
+            if sgr_stats.get('total_attempts', 0) > 0:
+                logger.info(f"💡 SGR successfully guided {sgr_stats.get('sgr_successes', 0)} out of {sgr_stats.get('total_attempts', 0)} mutation decisions!")
+
         logger.info(f"Evolution completed! {self.completed_generations} generations")
         logger.info("=" * 80)
         end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

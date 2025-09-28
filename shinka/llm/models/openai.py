@@ -67,11 +67,52 @@ def query_openai(
         content = response.output_parsed
         new_content = ""
         for i in content:
-            new_content += i[0] + ":" + i[1] + "\n"
+            # Handle case where i[1] might be a list or other type
+            if isinstance(i[1], list):
+                value_str = ", ".join(str(x) for x in i[1])
+            else:
+                value_str = str(i[1])
+            new_content += i[0] + ":" + value_str + "\n"
         new_msg_history.append({"role": "assistant", "content": new_content})
 
     input_cost = OPENAI_MODELS[model]["input_price"] * response.usage.input_tokens
     output_cost = OPENAI_MODELS[model]["output_price"] * response.usage.output_tokens
+    # For structured output, try to parse the content into Pydantic model
+    parsed_content_obj = None
+    if output_model is not None and content:
+        logger.debug(f"Structured output: content type={type(content)}, model={output_model.__name__}")
+        logger.debug(f"Structured output: content preview={str(content)[:300]}")
+        try:
+            # Check if content is already a Pydantic model instance
+            if isinstance(content, output_model):
+                logger.debug(f"Structured output: Content is already {output_model.__name__} instance")
+                parsed_content_obj = content
+            elif isinstance(content, list):
+                logger.debug(f"Structured output: Processing list with {len(content)} items")
+                # Convert list of key-value pairs to dict
+                content_dict = {}
+                for item in content:
+                    if len(item) >= 2:
+                        key, value = item[0], item[1]
+                        content_dict[key] = value
+                        logger.debug(f"Structured output: Added {key}={value}")
+                logger.debug(f"Structured output: Final dict={content_dict}")
+                parsed_content_obj = output_model(**content_dict)
+                logger.debug(f"Structured output: Successfully created {output_model.__name__}")
+            elif isinstance(content, str):
+                logger.debug("Structured output: Processing string content")
+                # Try to parse as JSON
+                import json
+                content_dict = json.loads(content)
+                logger.debug(f"Structured output: Parsed JSON dict={content_dict}")
+                parsed_content_obj = output_model(**content_dict)
+                logger.debug(f"Structured output: Successfully created {output_model.__name__}")
+            else:
+                logger.debug(f"Structured output: Unexpected content type {type(content)}")
+        except Exception as e:
+            logger.warning(f"Failed to parse structured output into {output_model.__name__}: {e}")
+            logger.debug(f"Structured output error details: content={content}")
+
     result = QueryResult(
         content=content,
         msg=msg,
@@ -86,5 +127,6 @@ def query_openai(
         output_cost=output_cost,
         thought="",
         model_posteriors=model_posteriors,
+        parsed_content=parsed_content_obj,
     )
     return result

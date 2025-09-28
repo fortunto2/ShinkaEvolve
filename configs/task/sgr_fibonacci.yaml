@@ -1,0 +1,44 @@
+evaluate_function:
+  _target_: shinka.core.wrap_eval.run_shinka_eval
+  program_path: ???
+  results_dir: ???
+  experiment_fn_name: "run_shinka_eval"
+  num_runs: 1
+
+distributed_job_config:
+  _target_: shinka.launch.SlurmCondaJobConfig
+  modules:
+  - "cuda/12.4"
+  - "cudnn/8.9.7"
+  - "hpcx/2.20"
+  eval_program_path: "shinka/eval_hydra.py"
+  conda_env: "shinka"
+  time: "00:10:00" 
+  cpus: 1
+  gpus: 0
+  mem: "8G"
+
+evo_config:
+  task_sys_msg: |
+    You are an expert Python programmer specializing in algorithm optimization, particularly for mathematical sequences like Fibonacci.
+
+    Your goal is to optimize Fibonacci implementations for both correctness and performance. Consider these approaches:
+
+    1. **Iterative Implementation**: Replace recursion with loops for better performance
+    2. **Memoization**: Cache results to avoid redundant calculations
+    3. **Dynamic Programming**: Build solutions bottom-up
+    4. **Mathematical Optimizations**: Use closed-form formulas or matrix exponentiation for very large numbers
+    5. **Input Validation**: Handle edge cases properly
+    6. **Code Quality**: Add proper documentation and error handling
+
+    The current implementation is a naive recursive approach that becomes exponentially slow. Focus on:
+    - Maintaining correctness for all test cases
+    - Dramatically improving performance (sub-millisecond for n=30)
+    - Writing clean, readable, well-documented code
+
+    Be creative but ensure all optimizations maintain mathematical correctness.
+  language: "python"
+  init_program_path: "examples/sgr_fibonacci/initial.py"
+  job_type: "slurm_conda"
+
+exp_name: "sgr_fibonacci"

@@ -1,0 +1,39 @@
+# Quick debug evolution config for fast testing
+# @package _global_
+
+num_generations: 1
+population_size: 1
+
+# Parent sampling
+num_parents: 1
+parent_selection_strategy: "random"  # Fastest selection
+use_adaptive_parent_sampling: false  # Disable for speed
+
+# Mutation settings - minimal for speed
+num_mutations: 1
+num_llm_mutations: 1
+num_edit_mutations: 0
+num_crossover_mutations: 0
+
+# LLM settings - single fast model
+llm_models:
+  - gpt-5-mini
+
+# Prompt settings - simple prompts for speed
+use_expert_iteration: false
+use_search_reflection: false  # Disable reflection for speed
+use_meta_llm: false          # Disable meta recommendations
+
+# Evaluation settings
+evaluate_first_individual: true
+
+# Timing and efficiency
+timeout_minutes: 10  # Short timeout
+
+# Novelty settings - simplified
+novelty:
+  use_novelty_filter: false  # Disable for speed
+
+# Archive settings - minimal
+archive_management:
+  save_frequency: 1  # Save every generation for testing

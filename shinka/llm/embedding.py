@@ -91,9 +91,23 @@ class EmbeddingClient:
             single_code = True
         else:
             single_code = False
+
+        # Truncate each text to approximately 8000 tokens (safe margin below 8192)
+        # Using rough estimate of 4 characters per token
+        MAX_CHARS = 8000 * 4  # ~32,000 characters for safety
+        truncated_code = []
+        for text in code:
+            if len(text) > MAX_CHARS:
+                truncated_text = text[:MAX_CHARS]
+                if self.verbose:
+                    logger.info(f"Truncated text from {len(text)} to {len(truncated_text)} characters")
+                truncated_code.append(truncated_text)
+            else:
+                truncated_code.append(text)
+
         try:
             response = self.client.embeddings.create(
-                model=self.model, input=code, encoding_format="float"
+                model=self.model, input=truncated_code, encoding_format="float"
             )
             cost = response.usage.total_tokens * OPENAI_EMBEDDING_COSTS[self.model]
             # Extract embedding from response

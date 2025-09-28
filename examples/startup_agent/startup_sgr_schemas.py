@@ -17,6 +17,7 @@ from annotated_types import Ge, Le, MinLen, MaxLen
 
 # === Market Analysis Schemas ===
 
+# EVOLVE-BLOCK-START: market_schemas
 class MarketOpportunity(BaseModel):
     """Specific market opportunity identified."""
     opportunity: str = Field(description="Description of the opportunity")
@@ -24,7 +25,10 @@ class MarketOpportunity(BaseModel):
     growth_rate: float = Field(ge=-1.0, le=5.0, description="Annual growth rate")
     difficulty: Literal["low", "medium", "high"] = Field(description="Market entry difficulty")
     evidence: str = Field(description="Supporting evidence from research")
+    # Fields that can be evolved: risk_score, competitive_density, seasonality, etc.
+# EVOLVE-BLOCK-END: market_schemas
 
+# EVOLVE-BLOCK-START: customer_schemas
 class CustomerSegment(BaseModel):
     """Target customer segment analysis."""
     segment_name: str = Field(description="Name of customer segment")
@@ -32,6 +36,8 @@ class CustomerSegment(BaseModel):
     pain_points: List[str] = Field(description="Key pain points this segment faces")
     willingness_to_pay: Literal["low", "medium", "high"] = Field(description="Payment willingness")
     acquisition_channels: List[str] = Field(description="Best channels to reach this segment")
+    # Evolvable fields: demographics, psychographics, behavior_patterns, conversion_funnel, etc.
+# EVOLVE-BLOCK-END: customer_schemas
 
 class NicheAnalysis(BaseModel):
     """Comprehensive market niche analysis."""
@@ -74,25 +80,48 @@ class CompetitorProfile(BaseModel):
 
 # === Strategy Development Schemas ===
 
+# EVOLVE-BLOCK-START: value_proposition_schema
 class ValueProposition(BaseModel):
     """Core value proposition definition."""
     primary_benefit: str = Field(description="Main benefit delivered to customers")
     unique_differentiator: str = Field(description="What makes this unique")
     proof_points: List[str] = Field(description="Evidence supporting the value claim")
+    # EVOLVABLE FIELDS - these can be added/modified by genetic algorithm:
+    # target_audience: Optional[str] = Field(description="Specific target audience segment")
+    # emotional_trigger: Optional[str] = Field(description="Primary emotional motivator")
+    # urgency_factor: Optional[str] = Field(description="What creates urgency to buy")
+    # risk_mitigation: Optional[List[str]] = Field(description="How we reduce customer risk")
+# EVOLVE-BLOCK-END: value_proposition_schema
 
+# EVOLVE-BLOCK-START: monetization_schema
 class MonetizationModel(BaseModel):
     """Revenue and monetization strategy."""
     model_type: Literal["subscription", "one_time", "freemium", "marketplace", "advertising"]
     pricing_strategy: str = Field(description="How pricing is determined")
     revenue_streams: List[str] = Field(description="Different ways to generate revenue")
     unit_economics: str = Field(description="Basic unit economics assumptions")
+    # EVOLVABLE FIELDS - these can be added/modified by genetic algorithm:
+    # price_elasticity: Optional[float] = Field(ge=0, le=2, description="Price sensitivity factor")
+    # seasonal_pricing: Optional[bool] = Field(description="Whether to use seasonal pricing")
+    # competitor_pricing_gap: Optional[float] = Field(description="Pricing vs average competitor")
+    # upsell_potential: Optional[float] = Field(ge=0, le=1, description="Upselling opportunity")
+    # retention_incentives: Optional[List[str]] = Field(description="Strategies to retain customers")
+# EVOLVE-BLOCK-END: monetization_schema
 
+# EVOLVE-BLOCK-START: gtm_strategy_schema
 class GoToMarketStrategy(BaseModel):
     """Customer acquisition and growth strategy."""
     acquisition_channels: List[str] = Field(description="How to acquire customers")
     launch_strategy: str = Field(description="Product launch approach")
     growth_tactics: List[str] = Field(description="Strategies for scaling")
     partnership_opportunities: List[str] = Field(description="Potential partnerships")
+    # EVOLVABLE FIELDS - these can be added/modified by genetic algorithm:
+    # beta_testing_strategy: Optional[str] = Field(description="Beta testing and feedback approach")
+    # influencer_strategy: Optional[str] = Field(description="Influencer marketing approach")
+    # community_building: Optional[str] = Field(description="How to build user community")
+    # viral_mechanics: Optional[List[str]] = Field(description="Built-in viral growth features")
+    # geographic_rollout: Optional[List[str]] = Field(description="Geographic expansion plan")
+# EVOLVE-BLOCK-END: gtm_strategy_schema
 
 class MarketStrategy(BaseModel):
     """Comprehensive market strategy."""
@@ -113,12 +142,20 @@ class StrengthWeakness(BaseModel):
     description: str = Field(description="Detailed description")
     impact: Literal["low", "medium", "high"] = Field(description="Potential impact level")
 
+# EVOLVE-BLOCK-START: risk_assessment_schema
 class RiskAssessment(BaseModel):
     """Risk evaluation."""
     risk: str = Field(description="Description of the risk")
     probability: Literal["low", "medium", "high"] = Field(description="Likelihood of occurrence")
     impact: Literal["low", "medium", "high"] = Field(description="Impact if it occurs")
     mitigation: str = Field(description="How to mitigate this risk")
+    # EVOLVABLE FIELDS - these can be added/modified by genetic algorithm:
+    # risk_category: Optional[Literal["market", "technical", "financial", "operational", "regulatory"]] = Field(description="Risk category")
+    # timeline: Optional[str] = Field(description="When this risk might materialize")
+    # monitoring_metrics: Optional[List[str]] = Field(description="Early warning indicators")
+    # contingency_plan: Optional[str] = Field(description="Backup plan if mitigation fails")
+    # cost_of_mitigation: Optional[float] = Field(ge=0, description="Cost to implement mitigation")
+# EVOLVE-BLOCK-END: risk_assessment_schema
 
 class CriticalEvaluation(BaseModel):
     """Critical evaluation of a strategy."""
@@ -134,6 +171,7 @@ class CriticalEvaluation(BaseModel):
 
 # === PRD Generation Schemas ===
 
+# EVOLVE-BLOCK-START: product_feature_schema
 class ProductFeature(BaseModel):
     """Individual product feature specification."""
     name: str = Field(description="Feature name")
@@ -141,14 +179,30 @@ class ProductFeature(BaseModel):
     priority: Literal["must_have", "should_have", "nice_to_have"] = Field(description="Feature priority")
     acceptance_criteria: List[str] = Field(description="Criteria for feature completion")
     effort_estimate: Literal["small", "medium", "large"] = Field(description="Development effort")
+    # EVOLVABLE FIELDS - these can be added/modified by genetic algorithm:
+    # user_value_score: Optional[float] = Field(ge=1, le=10, description="User value rating")
+    # technical_risk: Optional[Literal["low", "medium", "high"]] = Field(description="Implementation risk")
+    # dependencies: Optional[List[str]] = Field(description="Feature dependencies")
+    # usage_frequency: Optional[Literal["daily", "weekly", "monthly", "occasional"]] = Field(description="Expected usage")
+    # monetization_impact: Optional[Literal["none", "indirect", "direct"]] = Field(description="Revenue impact")
+# EVOLVE-BLOCK-END: product_feature_schema
 
+# EVOLVE-BLOCK-START: technical_requirement_schema
 class TechnicalRequirement(BaseModel):
     """Technical implementation requirement."""
     requirement: str = Field(description="Technical requirement description")
     category: Literal["performance", "security", "scalability", "integration"] = Field(description="Requirement type")
     specification: str = Field(description="Detailed specification")
     priority: Literal["high", "medium", "low"] = Field(description="Implementation priority")
+    # EVOLVABLE FIELDS - these can be added/modified by genetic algorithm:
+    # compliance_standards: Optional[List[str]] = Field(description="Required compliance standards")
+    # third_party_dependencies: Optional[List[str]] = Field(description="External service dependencies")
+    # testing_requirements: Optional[List[str]] = Field(description="Testing and validation needs")
+    # maintenance_complexity: Optional[Literal["low", "medium", "high"]] = Field(description="Ongoing maintenance complexity")
+    # cost_impact: Optional[Literal["low", "medium", "high"]] = Field(description="Impact on development cost")
+# EVOLVE-BLOCK-END: technical_requirement_schema
 
+# EVOLVE-BLOCK-START: success_metric_schema
 class SuccessMetric(BaseModel):
     """Key performance indicator."""
     metric_name: str = Field(description="Name of the metric")
@@ -156,6 +210,13 @@ class SuccessMetric(BaseModel):
     target_value: str = Field(description="Target value to achieve")
     measurement_method: str = Field(description="How to measure this metric")
     timeframe: str = Field(description="When to measure/achieve this")
+    # EVOLVABLE FIELDS - these can be added/modified by genetic algorithm:
+    # metric_type: Optional[Literal["leading", "lagging", "diagnostic"]] = Field(description="Metric classification")
+    # baseline_value: Optional[str] = Field(description="Current baseline measurement")
+    # frequency: Optional[Literal["daily", "weekly", "monthly", "quarterly"]] = Field(description="Measurement frequency")
+    # owner: Optional[str] = Field(description="Who is responsible for this metric")
+    # threshold_alerts: Optional[List[str]] = Field(description="Alert conditions if underperforming")
+# EVOLVE-BLOCK-END: success_metric_schema
 
 class MilestoneDefinition(BaseModel):
     """Development milestone."""
@@ -205,6 +266,57 @@ class StrategyIteration(BaseModel):
     best_strategy_index: int = Field(ge=0, description="Index of best strategy")
     improvement_areas: List[str] = Field(default=[], description="Areas for next iteration")
 
+
+# === SEO Keyword Evolution ===
+
+# EVOLVE-BLOCK-START: keyword_strategy_schema
+class KeywordOpportunity(BaseModel):
+    """Individual keyword opportunity with competitive metrics."""
+    keyword: str = Field(description="The keyword phrase")
+    search_volume: int = Field(ge=0, description="Monthly search volume")
+    competition_score: float = Field(ge=0, le=100, description="Competition difficulty (0=easy, 100=hard)")
+    commercial_intent: Literal["low", "medium", "high"] = Field(description="Commercial purchase intent")
+    seasonal_multiplier: float = Field(ge=0.1, le=10.0, description="Seasonal traffic multiplier")
+    # EVOLVABLE FIELDS - these can be added/modified by genetic algorithm:
+    # trend_direction: Optional[Literal["rising", "stable", "declining"]] = Field(description="Search trend direction")
+    # geographic_focus: Optional[List[str]] = Field(description="Best performing regions")
+    # related_keywords: Optional[List[str]] = Field(description="Semantically related terms")
+    # content_gap_score: Optional[float] = Field(ge=0, le=10, description="Content opportunity score")
+    # voice_search_potential: Optional[float] = Field(ge=0, le=1, description="Voice search optimization potential")
+# EVOLVE-BLOCK-END: keyword_strategy_schema
+
+# EVOLVE-BLOCK-START: niche_discovery_schema
+class NicheKeywordCluster(BaseModel):
+    """Cluster of related keywords defining a market niche."""
+    cluster_name: str = Field(description="Name for this keyword cluster/niche")
+    primary_keywords: List[KeywordOpportunity] = Field(description="Main high-volume keywords")
+    long_tail_keywords: List[KeywordOpportunity] = Field(description="Long-tail opportunities")
+    niche_score: float = Field(ge=0, le=10, description="Overall niche opportunity score")
+    entry_difficulty: Literal["easy", "medium", "hard"] = Field(description="Market entry difficulty")
+    market_size_estimate: int = Field(ge=0, description="Estimated total addressable searches")
+    # EVOLVABLE FIELDS - these can be added/modified by genetic algorithm:
+    # competitor_density: Optional[float] = Field(ge=0, le=1, description="How crowded the niche is")
+    # monetization_potential: Optional[Literal["low", "medium", "high"]] = Field(description="Revenue potential")
+    # content_requirements: Optional[List[str]] = Field(description="Types of content needed")
+    # user_intent_mix: Optional[Dict[str, float]] = Field(description="Distribution of search intents")
+    # seasonal_patterns: Optional[List[str]] = Field(description="Seasonal traffic patterns")
+# EVOLVE-BLOCK-END: niche_discovery_schema
+
+# EVOLVE-BLOCK-START: keyword_evolution_strategy
+class KeywordEvolutionStrategy(BaseModel):
+    """Strategy for evolving and discovering new keyword opportunities."""
+    base_topic: str = Field(description="Core business/product topic")
+    target_niches: List[NicheKeywordCluster] = Field(description="Identified niche opportunities")
+    expansion_vectors: List[str] = Field(description="Directions for keyword expansion")
+    competitive_gaps: List[str] = Field(description="Under-served keyword areas")
+    innovation_keywords: List[str] = Field(description="Emerging/innovative keyword opportunities")
+    # EVOLVABLE FIELDS - these can be added/modified by genetic algorithm:
+    # keyword_generation_prompts: Optional[List[str]] = Field(description="AI prompts for generating new keywords")
+    # semantic_expansion_rules: Optional[List[str]] = Field(description="Rules for semantic keyword expansion")
+    # competitor_keyword_gaps: Optional[List[str]] = Field(description="Keywords competitors are missing")
+    # emerging_trend_keywords: Optional[List[str]] = Field(description="Keywords from emerging trends")
+    # localization_opportunities: Optional[List[str]] = Field(description="Geographic keyword variations")
+# EVOLVE-BLOCK-END: keyword_evolution_strategy
 
 # === Web Research Integration ===
 

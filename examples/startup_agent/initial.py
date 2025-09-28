@@ -21,6 +21,7 @@ import random
 # SGR and ShinkaEvolve imports
 from shinka.llm import LLMClient
 from tavily_integration import TavilyWebResearch
+from startup_sgr_schemas import KeywordOpportunity, NicheKeywordCluster, KeywordEvolutionStrategy
 
 # Enhanced schemas with quantitative focus
 from pydantic import BaseModel, Field
@@ -34,10 +35,10 @@ logger = logging.getLogger(__name__)
 class StartupAgentEvolutionConfig:
     """Evolutionary parameters for startup analysis optimization."""
 
-    # Market research parameters
-    market_research_depth: int = 5  # Number of market research queries
-    competitor_analysis_depth: int = 7  # Number of competitor research queries
-    seo_keyword_research_depth: int = 8  # SEO keyword research queries
+    # Market research parameters (quick defaults)
+    market_research_depth: int = 2  # Number of market research queries
+    competitor_analysis_depth: int = 2  # Number of competitor research queries
+    seo_keyword_research_depth: int = 3  # SEO keyword research queries
 
     # Strategy generation parameters
     strategy_count: int = 5  # Number of strategies to generate
@@ -65,6 +66,7 @@ class StartupAgentEvolutionConfig:
     seo_metrics_count: int = 15
 
 # Enhanced schemas with quantitative focus
+# EVOLVE-BLOCK-START: seo_schemas
 class SEOOpportunity(BaseModel):
     """SEO opportunity with specific metrics."""
     keyword: str = Field(description="Target keyword")
@@ -74,7 +76,10 @@ class SEOOpportunity(BaseModel):
     competition_level: Literal["low", "medium", "high"] = Field(description="Competition level")
     estimated_cpc: float = Field(ge=0, description="Estimated cost per click in USD")
     commercial_intent: Literal["low", "medium", "high"] = Field(description="Commercial intent")
+    # Evolvable: competitor_analysis, content_gap_score, local_search_volume, featured_snippet_potential
+# EVOLVE-BLOCK-END: seo_schemas
 
+# EVOLVE-BLOCK-START: market_data_schema
 class QuantitativeMarketData(BaseModel):
     """Market data with specific numbers."""
     market_size_usd: int = Field(ge=0, description="Total addressable market in USD")
@@ -84,7 +89,15 @@ class QuantitativeMarketData(BaseModel):
     customer_acquisition_cost: float = Field(ge=0, description="Estimated CAC in USD")
     lifetime_value: float = Field(ge=0, description="Customer LTV in USD")
     market_penetration_percent: float = Field(ge=0, le=100, description="Achievable market penetration %")
+    # EVOLVABLE FIELDS - these can be added/modified by genetic algorithm:
+    # geographic_focus: Optional[List[str]] = Field(description="Primary geographic markets")
+    # market_maturity: Optional[Literal["emerging", "growing", "mature", "declining"]] = Field(description="Market maturity stage")
+    # barrier_to_entry_score: Optional[float] = Field(ge=1, le=10, description="Market entry difficulty (1=easy, 10=hard)")
+    # regulatory_risk_score: Optional[float] = Field(ge=1, le=10, description="Regulatory risk assessment")
+    # market_volatility: Optional[float] = Field(ge=0, le=1, description="Market volatility factor")
+# EVOLVE-BLOCK-END: market_data_schema
 
+# EVOLVE-BLOCK-START: competitor_metrics_schema
 class CompetitorMetrics(BaseModel):
     """Competitor with specific metrics."""
     name: str = Field(description="Competitor name")
@@ -94,7 +107,17 @@ class CompetitorMetrics(BaseModel):
     organic_traffic_monthly: Optional[int] = Field(ge=0, description="Estimated monthly organic traffic")
     paid_ad_spend_monthly: Optional[int] = Field(ge=0, description="Estimated monthly ad spend")
     weakness_score: int = Field(ge=1, le=10, description="Weakness/opportunity score (1=strong, 10=weak)")
+    # EVOLVABLE FIELDS - these can be added/modified by genetic algorithm:
+    # funding_stage: Optional[Literal["bootstrap", "seed", "series_a", "series_b", "public"]] = Field(description="Funding stage")
+    # employee_count: Optional[int] = Field(ge=1, description="Estimated employee count")
+    # social_media_followers: Optional[int] = Field(ge=0, description="Total social media following")
+    # customer_satisfaction_score: Optional[float] = Field(ge=1, le=10, description="Customer satisfaction rating")
+    # innovation_score: Optional[float] = Field(ge=1, le=10, description="Innovation and R&D capability")
+    # geographic_presence: Optional[List[str]] = Field(description="Countries/regions where active")
+    # pricing_strategy: Optional[str] = Field(description="Pricing model and strategy")
+# EVOLVE-BLOCK-END: competitor_metrics_schema
 
+# EVOLVE-BLOCK-START: financial_projection_schema
 class FinancialProjection(BaseModel):
     """Monthly financial projection."""
     month: int = Field(ge=1, le=24, description="Month number")
@@ -103,7 +126,18 @@ class FinancialProjection(BaseModel):
     user_acquisition_count: int = Field(ge=0, description="New users acquired")
     organic_traffic: int = Field(ge=0, description="Organic traffic visitors")
     conversion_rate: float = Field(ge=0, le=1, description="Conversion rate")
+    # EVOLVABLE FIELDS - these can be added/modified by genetic algorithm:
+    # paid_traffic: Optional[int] = Field(ge=0, description="Paid traffic visitors")
+    # cost_breakdown: Optional[Dict[str, int]] = Field(description="Detailed cost breakdown")
+    # revenue_breakdown: Optional[Dict[str, int]] = Field(description="Revenue by source/product")
+    # churn_rate: Optional[float] = Field(ge=0, le=1, description="Customer churn rate")
+    # gross_margin: Optional[float] = Field(ge=0, le=1, description="Gross margin percentage")
+    # cash_flow: Optional[int] = Field(description="Net cash flow for the month")
+    # burn_rate: Optional[int] = Field(ge=0, description="Monthly burn rate")
+    # runway_months: Optional[int] = Field(ge=0, description="Remaining runway in months")
+# EVOLVE-BLOCK-END: financial_projection_schema
 
+# EVOLVE-BLOCK-START: main_analysis_schema
 class QuantitativeStartupAnalysis(BaseModel):
     """Comprehensive quantitative startup analysis."""
     product_name: str = Field(description="Product name")
@@ -113,6 +147,9 @@ class QuantitativeStartupAnalysis(BaseModel):
     market_data: QuantitativeMarketData = Field(description="Quantitative market data")
     seo_opportunities: List[SEOOpportunity] = Field(description="SEO opportunities with metrics")
     competitors: List[CompetitorMetrics] = Field(description="Competitor analysis with metrics")
+
+    # EVOLVABLE SEO STRATEGY - genetic algorithm can modify these
+    keyword_strategy: KeywordEvolutionStrategy = Field(description="Evolving keyword discovery and targeting strategy")
 
     # Product strategy
     core_features: List[str] = Field(description="Core product features")
@@ -136,6 +173,15 @@ class QuantitativeStartupAnalysis(BaseModel):
     # Success metrics
     kpi_targets: List[str] = Field(description="Specific KPI targets with numbers (format: 'metric: target')")
     competitive_advantages: List[str] = Field(description="Key competitive advantages")
+
+    # EVOLVABLE FIELDS - these can be added/modified by genetic algorithm:
+    # tech_stack: Optional[List[str]] = Field(description="Technology stack recommendations")
+    # user_personas: Optional[List[UserPersona]] = Field(description="Detailed user personas")
+    # growth_metrics: Optional[GrowthMetrics] = Field(description="Growth and virality metrics")
+    # regulatory_compliance: Optional[List[str]] = Field(description="Regulatory requirements")
+    # partnership_opportunities: Optional[List[Partnership]] = Field(description="Strategic partnerships")
+    # internationalization: Optional[InternationalizationPlan] = Field(description="Global expansion plan")
+# EVOLVE-BLOCK-END: main_analysis_schema
 
 class EvolvingStartupAgent:
     """Evolving startup agent with genetic algorithm parameters."""
@@ -318,7 +364,68 @@ class EvolvingStartupAgent:
                 "Superior personalization algorithms",
                 "Integrated SEO and content strategy",
                 "Rapid time-to-market for Christmas 2025"
-            ]
+            ],
+
+            # EVOLVABLE KEYWORD STRATEGY - genetic algorithm will evolve this
+            keyword_strategy=KeywordEvolutionStrategy(
+                base_topic=idea[:50],
+                target_niches=[
+                    NicheKeywordCluster(
+                        cluster_name="Seasonal Holiday Cards",
+                        primary_keywords=[
+                            KeywordOpportunity(
+                                keyword="christmas cards",
+                                search_volume=450000,
+                                competition_score=75,
+                                commercial_intent="high",
+                                seasonal_multiplier=8.0
+                            ),
+                            KeywordOpportunity(
+                                keyword="holiday greeting cards",
+                                search_volume=200000,
+                                competition_score=65,
+                                commercial_intent="high",
+                                seasonal_multiplier=6.0
+                            )
+                        ],
+                        long_tail_keywords=[
+                            KeywordOpportunity(
+                                keyword="personalized christmas cards online",
+                                search_volume=35000,
+                                competition_score=45,
+                                commercial_intent="high",
+                                seasonal_multiplier=9.0
+                            ),
+                            KeywordOpportunity(
+                                keyword="ai generated holiday cards",
+                                search_volume=8000,
+                                competition_score=25,
+                                commercial_intent="medium",
+                                seasonal_multiplier=10.0
+                            )
+                        ],
+                        niche_score=8.5,
+                        entry_difficulty="medium",
+                        market_size_estimate=700000
+                    )
+                ],
+                expansion_vectors=[
+                    "AI-powered personalization",
+                    "Corporate holiday solutions",
+                    "Year-round greeting cards",
+                    "Social media card sharing"
+                ],
+                competitive_gaps=[
+                    "Real-time AI customization",
+                    "Bulk corporate ordering",
+                    "International shipping automation"
+                ],
+                innovation_keywords=[
+                    "ai christmas card maker",
+                    "automated holiday greetings",
+                    "smart seasonal marketing"
+                ]
+            )
         )
 
     def _select_models(self) -> List[str]:
@@ -337,17 +444,24 @@ class EvolvingStartupAgent:
         logger.info(f"🧬 Starting evolving startup analysis...")
         logger.info(f"📊 Config: depth={self.config.market_research_depth}, SEO={self.config.seo_keyword_research_depth}")
 
+        # Phase 0: Create base analysis with evolving keyword strategy
+        base_analysis = self._create_analysis_template(idea)
+        keyword_strategy = base_analysis.keyword_strategy
+
         # Phase 1: Enhanced Market Research
         await self._conduct_enhanced_market_research(idea)
 
-        # Phase 2: SEO Opportunity Research
-        await self._conduct_seo_research(idea)
+        # Phase 2: SEO Opportunity Research with evolving keywords
+        await self._conduct_seo_research(idea, keyword_strategy)
 
         # Phase 3: Competitive Intelligence
         await self._conduct_competitive_research(idea)
 
         # Phase 4: Generate Quantitative Analysis
         final_analysis = await self._generate_quantitative_analysis(idea)
+
+        # Preserve the evolving keyword strategy in final analysis
+        final_analysis.keyword_strategy = keyword_strategy
 
         self.final_analysis = final_analysis
         return final_analysis
@@ -375,30 +489,99 @@ class EvolvingStartupAgent:
         self.market_research_data = "".join(research_data_parts)
         logger.info(f"📊 Market research completed: {len(self.market_research_data)} characters")
 
-    async def _conduct_seo_research(self, idea: str):
-        """SEO opportunity research for seasonal traffic."""
+    async def _conduct_seo_research(self, idea: str, keyword_strategy: KeywordEvolutionStrategy):
+        """Deep SEO research with top-5 site analysis per keyword."""
 
-        seo_queries = [
-            f"Christmas cards SEO keywords search volume 2024 2025",
-            f"holiday greeting cards Google search trends seasonal data",
-            f"AI Christmas card generator keyword difficulty competition",
-            f"personalized Christmas cards search volume statistics",
-            f"Christmas ecard creator SEO opportunity keywords",
-            f"holiday card maker Google Ads cost per click data",
-            f"Christmas greeting generator seasonal search trends",
-            f"AI holiday cards keyword research competition analysis",
-            f"Christmas card templates search volume monthly data",
-            f"holiday greeting automation SEO keywords trends"
-        ]
+        # Extract core keywords from evolving strategy
+        core_keywords = []
 
-        seo_data_parts = []
-        for i, query in enumerate(seo_queries[:self.config.seo_keyword_research_depth]):
-            logger.info(f"🔍 SEO research {i+1}/{self.config.seo_keyword_research_depth}: {query[:50]}...")
-            data = await self.web_research.research_trends(query)
-            seo_data_parts.append(f"SEO QUERY {i+1}: {query}\nDATA: {data}\n\n")
+        # Get primary keywords from all niches
+        for niche in keyword_strategy.target_niches:
+            for keyword_opp in niche.primary_keywords:
+                core_keywords.append(keyword_opp.keyword)
 
-        self.seo_research_data = "".join(seo_data_parts)
-        logger.info(f"🔍 SEO research completed: {len(self.seo_research_data)} characters")
+        # Add innovation keywords for exploration
+        core_keywords.extend(keyword_strategy.innovation_keywords)
+
+        # Remove duplicates and take first few for deep analysis
+        core_keywords = list(dict.fromkeys(core_keywords))  # Remove duplicates while preserving order
+
+        logger.info(f"🔍 Starting deep SEO analysis for {len(core_keywords)} keywords...")
+
+        seo_analyses = []
+        combined_semantic_core = []
+        combined_marketing_hooks = []
+        combined_competitive_gaps = []
+
+        # Perform deep analysis for each core keyword
+        for i, keyword in enumerate(core_keywords[:3]):  # Limit to 3 to avoid timeout
+            logger.info(f"🎯 Deep SEO analysis {i+1}/3: {keyword}")
+
+            try:
+                # Perform deep analysis - this will parse top-5 sites
+                analysis = await self.web_research.deep_seo_analysis(keyword, max_sites=5)
+                seo_analyses.append(analysis)
+
+                # Aggregate insights across all keywords
+                combined_semantic_core.extend(analysis.get("semantic_core", []))
+                combined_marketing_hooks.extend(analysis.get("marketing_hooks", []))
+                combined_competitive_gaps.extend(analysis.get("competitive_gaps", []))
+
+                logger.info(f"✅ Keyword '{keyword}' analysis: {len(analysis.get('top_sites', []))} sites, {len(analysis.get('semantic_core', []))} keywords")
+
+            except Exception as e:
+                logger.warning(f"⚠️ Deep analysis failed for '{keyword}': {e}")
+
+        # Format comprehensive SEO research data
+        self.seo_research_data = self._format_deep_seo_data(
+            seo_analyses,
+            combined_semantic_core,
+            combined_marketing_hooks,
+            combined_competitive_gaps
+        )
+
+        logger.info(f"🔍 Deep SEO research completed: {len(self.seo_research_data)} characters")
+
+    def _format_deep_seo_data(self, analyses: List[Dict], semantic_core: List[str],
+                              marketing_hooks: List[str], gaps: List[str]) -> str:
+        """Format deep SEO analysis into comprehensive summary."""
+
+        summary = "DEEP SEO COMPETITIVE ANALYSIS:\n\n"
+
+        # Semantic core summary
+        unique_keywords = list(set(semantic_core))[:20]
+        summary += f"SEMANTIC CORE ({len(unique_keywords)} keywords):\n"
+        for kw in unique_keywords:
+            summary += f"- {kw}\n"
+        summary += "\n"
+
+        # Marketing hooks summary
+        unique_hooks = list(set(marketing_hooks))[:15]
+        summary += f"COMPETITOR MARKETING HOOKS ({len(unique_hooks)} hooks):\n"
+        for hook in unique_hooks:
+            summary += f"- {hook}\n"
+        summary += "\n"
+
+        # Competitive gaps
+        unique_gaps = list(set(gaps))
+        summary += f"COMPETITIVE GAPS & OPPORTUNITIES ({len(unique_gaps)} gaps):\n"
+        for gap in unique_gaps:
+            summary += f"- {gap}\n"
+        summary += "\n"
+
+        # Top sites analysis per keyword
+        summary += "TOP COMPETITORS BY KEYWORD:\n"
+        for analysis in analyses:
+            keyword = analysis.get("keyword", "unknown")
+            top_sites = analysis.get("top_sites", [])
+
+            summary += f"\n'{keyword}' top competitors:\n"
+            for i, site in enumerate(top_sites[:3]):
+                domain = site.get("domain", "unknown")
+                positioning = ", ".join(site.get("positioning", []))
+                summary += f"  {i+1}. {domain} - {positioning}\n"
+
+        return summary
 
     async def _conduct_competitive_research(self, idea: str):
         """Competitive intelligence with metrics focus."""
@@ -624,6 +807,7 @@ class EvolvingStartupAgent:
             market_data=full_market_data,
             seo_opportunities=full_seo_opportunities,
             competitors=full_competitors,
+            keyword_strategy=template.keyword_strategy,  # Use keyword strategy from template
             core_features=minimal.core_features,
             unique_value_proposition=minimal.unique_value_proposition,
             pricing_model=minimal.pricing_model,
@@ -684,9 +868,17 @@ class EvolvingStartupAgent:
         """Save results in ShinkaEvolve format with evolution metrics."""
 
         if output_dir is None:
-            base_results = Path("/Users/rustam/projects/ShinkaEvolve/results")
-            timestamp = datetime.now().strftime("%Y.%m.%d%H%M%S")
-            output_dir = base_results / "startup_agent" / timestamp
+            import os
+
+            # Check if ShinkaEvolve provides a results directory via environment variable
+            shinka_results_dir = os.getenv('SHINKA_RESULTS_DIR')
+            if shinka_results_dir:
+                output_dir = Path(shinka_results_dir)
+            else:
+                # Fallback to timestamp-based directory for standalone runs
+                base_results = Path("/Users/rustam/projects/ShinkaEvolve/results")
+                timestamp = datetime.now().strftime("%Y.%m.%d%H%M%S")
+                output_dir = base_results / "startup_agent" / timestamp
 
         Path(output_dir).mkdir(parents=True, exist_ok=True)
 
@@ -776,8 +968,93 @@ class EvolvingStartupAgent:
             f.write(f"\n\nCOMPETITOR RESEARCH ({len(self.competitor_research_data)} chars):\n")
             f.write(self.competitor_research_data)
 
+        # Save formatted PRD document
+        if self.generated_prd_text:
+            with open(output_dir / "PRD_Document.md", "w", encoding="utf-8") as f:
+                f.write(f"# Product Requirements Document: {self.final_analysis.product_name if self.final_analysis else 'Startup Analysis'}\n\n")
+                f.write(f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write(f"**Target Season:** {self.config.target_season}\n")
+                f.write(f"**Evolution Fitness:** {self.calculate_evolution_fitness():.3f}\n\n")
+                f.write("---\n\n")
+                f.write(self.generated_prd_text)
+
+        # Save executive summary
+        if self.final_analysis:
+            summary = self._generate_executive_summary()
+            with open(output_dir / "Executive_Summary.md", "w", encoding="utf-8") as f:
+                f.write(summary)
+
         logger.info(f"💾 Evolution results saved to: {output_dir}")
         return output_dir
+
+    def _generate_executive_summary(self) -> str:
+        """Generate executive summary from analysis data."""
+        if not self.final_analysis:
+            return "# Executive Summary\n\nNo analysis data available."
+
+        analysis = self.final_analysis
+
+        summary = f"""# Executive Summary: {analysis.product_name}
+
+## Overview
+{analysis.elevator_pitch}
+
+## Market Opportunity
+- **Market Size:** ${analysis.market_data.market_size_usd:,}
+- **Annual Growth Rate:** {analysis.market_data.growth_rate_annual:.1%}
+- **Target Customers:** {analysis.market_data.target_customer_count:,}
+- **Seasonal Peak Multiplier:** {analysis.market_data.seasonal_peak_multiplier}x
+
+## Financial Projections
+- **Funding Required:** ${analysis.funding_requirements:,}
+- **Break-even Month:** {analysis.break_even_month}
+- **Customer Acquisition Cost:** ${analysis.market_data.customer_acquisition_cost}
+- **Customer Lifetime Value:** ${analysis.market_data.lifetime_value}
+
+## SEO Strategy
+- **Primary Keywords:** {len(analysis.seo_opportunities)} opportunities identified
+- **Top Keywords:**
+"""
+
+        # Add top 3 SEO keywords
+        for i, seo in enumerate(analysis.seo_opportunities[:3]):
+            summary += f"  {i+1}. **{seo.keyword}** - {seo.monthly_search_volume:,} monthly searches\n"
+
+        summary += f"""
+## Competition Analysis
+- **Main Competitors:** {len(analysis.competitors)} analyzed
+"""
+
+        # Add top competitors
+        for i, comp in enumerate(analysis.competitors[:3]):
+            summary += f"  {i+1}. **{comp.name}** - {comp.market_share_percent:.1f}% market share\n"
+
+        summary += f"""
+## Core Features
+"""
+        for i, feature in enumerate(analysis.core_features[:5]):
+            summary += f"{i+1}. {feature}\n"
+
+        summary += f"""
+## Launch Timeline
+Target season: **{self.config.target_season}**
+Launch window: **{self.config.launch_timeline_months} months**
+
+## Key Success Metrics
+"""
+        for kpi in analysis.kpi_targets[:3]:
+            summary += f"- {kpi}\n"
+
+        summary += f"""
+## Evolution Fitness Score
+**{self.calculate_evolution_fitness():.3f}/1.0** - Genetic algorithm optimization score
+
+---
+*Generated by ShinkaEvolve Startup Agent*
+*Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*
+"""
+
+        return summary
 
     async def close(self):
         """Close web research connection."""
@@ -799,9 +1076,9 @@ def run_evolving_startup_analysis():
 
     # Evolution config (these parameters will be mutated by ShinkaEvolve)
     config = StartupAgentEvolutionConfig(
-        market_research_depth=6,
-        competitor_analysis_depth=5,
-        seo_keyword_research_depth=10,
+        market_research_depth=2,
+        competitor_analysis_depth=2,
+        seo_keyword_research_depth=3,
         strategy_count=3,
         strategy_iteration_count=2,
         market_size_weight=0.20,
@@ -832,8 +1109,17 @@ def run_evolving_startup_analysis():
         # Calculate fitness
         fitness = agent.calculate_evolution_fitness()
 
-        # Save results
-        output_dir = agent.save_evolution_results()
+        # Save results - try to save in current directory if it's a ShinkaEvolve generation
+        import os
+        current_dir = os.getcwd()
+
+        # Check if we're in a ShinkaEvolve generation directory
+        if 'gen_' in current_dir and 'results' in current_dir:
+            # We're in a generation/results directory, save here
+            output_dir = agent.save_evolution_results(current_dir)
+        else:
+            # Use default behavior (create timestamp directory)
+            output_dir = agent.save_evolution_results()
 
         # Display key results
         print(f"\n🧬 EVOLVING STARTUP ANALYSIS RESULTS")

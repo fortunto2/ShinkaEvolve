@@ -198,6 +198,246 @@ class TavilyWebResearch:
 
         return validation_summary
 
+    async def deep_seo_analysis(self, keyword: str, max_sites: int = 5) -> Dict[str, Any]:
+        """
+        Perform deep SEO analysis for a keyword:
+        1. Get top search results
+        2. Parse each site's content
+        3. Extract keywords, marketing hooks, positioning
+        4. Build semantic core and insights
+
+        Args:
+            keyword: Target keyword to analyze
+            max_sites: Number of top sites to analyze (default 5)
+
+        Returns:
+            Comprehensive SEO analysis with competitive insights
+        """
+        logger.info(f"🔍 Deep SEO analysis for: {keyword}")
+
+        # Step 1: Get top search results
+        search_results = await self._search(f"{keyword}", max_results=max_sites)
+
+        analysis = {
+            "keyword": keyword,
+            "top_sites": [],
+            "semantic_core": [],
+            "marketing_hooks": [],
+            "positioning_insights": [],
+            "content_patterns": [],
+            "competitive_gaps": []
+        }
+
+        # Step 2: Analyze each top site
+        for i, result in enumerate(search_results[:max_sites]):
+            site_url = result.get('url', '')
+            site_title = result.get('title', '')
+            site_content = result.get('content', '')
+
+            logger.info(f"🌐 Analyzing site {i+1}/{max_sites}: {site_url[:50]}...")
+
+            # Extract site analysis
+            site_analysis = await self._analyze_site_content(
+                site_url, site_title, site_content, keyword
+            )
+
+            analysis["top_sites"].append(site_analysis)
+
+            # Aggregate insights
+            analysis["semantic_core"].extend(site_analysis.get("keywords", []))
+            analysis["marketing_hooks"].extend(site_analysis.get("hooks", []))
+            analysis["positioning_insights"].extend(site_analysis.get("positioning", []))
+            analysis["content_patterns"].extend(site_analysis.get("patterns", []))
+
+        # Step 3: Generate competitive gaps and opportunities
+        analysis["competitive_gaps"] = await self._identify_gaps(analysis, keyword)
+
+        # Step 4: Clean and deduplicate
+        analysis = await self._consolidate_analysis(analysis)
+
+        logger.info(f"✅ Deep SEO analysis completed for {keyword}")
+        return analysis
+
+    async def _analyze_site_content(self, url: str, title: str, content: str, target_keyword: str) -> Dict[str, Any]:
+        """
+        Analyze individual site content for SEO insights.
+
+        Args:
+            url: Site URL
+            title: Site title
+            content: Site content
+            target_keyword: Target keyword we're analyzing
+
+        Returns:
+            Site-specific SEO analysis
+        """
+
+        try:
+            site_analysis = {
+                "url": url,
+                "title": title,
+                "domain": url.split('/')[2] if '/' in url else url,
+                "keywords": self._extract_keywords(content, target_keyword),
+                "hooks": self._extract_marketing_hooks(content),
+                "positioning": self._extract_positioning(content, title),
+                "patterns": self._extract_content_patterns(content),
+                "cta_strategies": self._extract_cta_strategies(content)
+            }
+
+            return site_analysis
+
+        except Exception as e:
+            logger.warning(f"⚠️ Site analysis failed for {url}: {e}")
+            return {
+                "url": url,
+                "title": title,
+                "error": str(e),
+                "keywords": [],
+                "hooks": [],
+                "positioning": [],
+                "patterns": [],
+                "cta_strategies": []
+            }
+
+    def _extract_keywords(self, content: str, target_keyword: str) -> List[str]:
+        """Extract relevant keywords from content."""
+        import re
+
+        # Simple keyword extraction - in real implementation could use NLP
+        content_lower = content.lower()
+
+        # Common keyword patterns for Christmas/holiday market
+        holiday_patterns = [
+            r'\b(christmas|holiday|festive|seasonal|winter|december)\s+\w+',
+            r'\w+\s+(cards?|greetings?|gifts?|wishes)',
+            r'(personalized?|custom|unique|special)\s+\w+',
+            r'(ai|artificial\s+intelligence|automated?|smart)\s+\w+',
+            r'(design|create|make|generate|build)\s+\w+'
+        ]
+
+        keywords = []
+        for pattern in holiday_patterns:
+            matches = re.findall(pattern, content_lower)
+            keywords.extend([match.strip() for match in matches if len(match.strip()) > 3])
+
+        # Remove duplicates and target keyword
+        keywords = list(set(keywords))
+        keywords = [kw for kw in keywords if target_keyword.lower() not in kw.lower()]
+
+        return keywords[:10]  # Top 10 most relevant
+
+    def _extract_marketing_hooks(self, content: str) -> List[str]:
+        """Extract marketing hooks and value propositions."""
+        import re
+
+        # Patterns for marketing hooks
+        hook_patterns = [
+            r'(save|get|create|make|design|build|generate)\s+[^.]{10,50}',
+            r'(free|instant|quick|easy|simple|fast)\s+[^.]{10,50}',
+            r'(professional|premium|high-quality|custom|personalized)\s+[^.]{10,50}',
+            r'(within\s+minutes?|in\s+seconds?|instantly|immediately)\s+[^.]{10,50}'
+        ]
+
+        hooks = []
+        for pattern in hook_patterns:
+            matches = re.findall(pattern, content, re.IGNORECASE)
+            hooks.extend([match.strip() for match in matches])
+
+        return hooks[:8]  # Top 8 hooks
+
+    def _extract_positioning(self, content: str, title: str) -> List[str]:
+        """Extract positioning statements and differentiation."""
+        positioning = []
+
+        # Look for positioning in title and key content sections
+        if "ai" in title.lower() or "artificial intelligence" in content.lower():
+            positioning.append("AI-powered solution")
+
+        if "professional" in content.lower():
+            positioning.append("Professional-grade tools")
+
+        if "easy" in content.lower() or "simple" in content.lower():
+            positioning.append("User-friendly approach")
+
+        if "custom" in content.lower() or "personalized" in content.lower():
+            positioning.append("Personalization focus")
+
+        return positioning
+
+    def _extract_content_patterns(self, content: str) -> List[str]:
+        """Extract content structure patterns."""
+        patterns = []
+
+        # Analyze content structure
+        if "step" in content.lower() or "how to" in content.lower():
+            patterns.append("Step-by-step guidance")
+
+        if "template" in content.lower():
+            patterns.append("Template-based approach")
+
+        if "gallery" in content.lower() or "examples" in content.lower():
+            patterns.append("Example showcase")
+
+        return patterns
+
+    def _extract_cta_strategies(self, content: str) -> List[str]:
+        """Extract call-to-action strategies."""
+        import re
+
+        cta_patterns = [
+            r'(start|begin|create|try|get started|sign up|download)\s+[^.]{5,30}',
+            r'(free trial|free version|no credit card)\s+[^.]{5,30}'
+        ]
+
+        ctas = []
+        for pattern in cta_patterns:
+            matches = re.findall(pattern, content, re.IGNORECASE)
+            ctas.extend([match.strip() for match in matches])
+
+        return ctas[:5]
+
+    async def _identify_gaps(self, analysis: Dict[str, Any], keyword: str) -> List[str]:
+        """Identify competitive gaps and opportunities."""
+
+        gaps = []
+
+        # Analyze what's missing in the competitive landscape
+        all_keywords = analysis.get("semantic_core", [])
+        all_hooks = analysis.get("marketing_hooks", [])
+
+        # Check for gaps in AI positioning
+        ai_mentions = sum(1 for kw in all_keywords if "ai" in kw.lower())
+        if ai_mentions < 2:
+            gaps.append("Limited AI positioning in top results")
+
+        # Check for seasonal focus gaps
+        seasonal_mentions = sum(1 for kw in all_keywords if any(season in kw.lower() for season in ["christmas", "holiday", "seasonal"]))
+        if seasonal_mentions < 5:
+            gaps.append("Insufficient seasonal optimization")
+
+        # Check for personalization gaps
+        personal_mentions = sum(1 for hook in all_hooks if "personal" in hook.lower())
+        if personal_mentions < 3:
+            gaps.append("Personalization not well emphasized")
+
+        return gaps
+
+    async def _consolidate_analysis(self, analysis: Dict[str, Any]) -> Dict[str, Any]:
+        """Clean and consolidate analysis data."""
+
+        # Remove duplicates and rank by frequency
+        semantic_core = list(set(analysis.get("semantic_core", [])))
+        marketing_hooks = list(set(analysis.get("marketing_hooks", [])))
+
+        # Sort by length/quality (longer = more specific)
+        semantic_core.sort(key=len, reverse=True)
+        marketing_hooks.sort(key=len, reverse=True)
+
+        analysis["semantic_core"] = semantic_core[:15]  # Top 15 keywords
+        analysis["marketing_hooks"] = marketing_hooks[:10]  # Top 10 hooks
+
+        return analysis
+
     def _format_market_research(self, results: List[Dict[str, Any]], idea: str) -> str:
         """Format market research results into summary."""
         if not results:

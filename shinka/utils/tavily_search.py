@@ -42,7 +42,7 @@ class TavilySearchService:
         self,
         query: str,
         max_results: int | None = None,
-        include_raw_content: bool = True,
+        include_raw_content: bool = False,
     ) -> (str, list[SourceData]):
         """Perform search through Tavily API and return results with
         SourceData.

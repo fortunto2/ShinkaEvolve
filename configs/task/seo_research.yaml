@@ -20,26 +20,38 @@ evo_config:
   task_sys_msg: |
     Develop an advanced SEO research strategy that can discover profitable niches through keyword research and competitor analysis.
 
+    IMPORTANT: The function uses a Pydantic SEOStrategy model for data validation. Always work with the strategy object and return it directly:
+    ```python
+    strategy = SEOStrategy(niche=niche_topic)
+    strategy.primary_keywords = [list_of_keywords]
+    strategy.competitor_domains = [list_of_domains]
+    strategy.search_strategies = [list_of_strategies]
+    strategy.analysis_depth = "description"
+    return strategy  # Return the Pydantic model directly
+    ```
+
     Your task is to evolve the `seo_research_strategy` function to:
-    1. Generate diverse, high-value keywords for any given niche (focus on low competition + good traffic potential)
-    2. Identify relevant competitor domains and websites using real search data
-    3. Create comprehensive search strategies covering different user intents (informational, commercial, transactional)
+    1. Generate diverse, high-value keywords (15+ for max score) focusing on low competition + good traffic potential
+    2. Identify relevant competitor domains (10+ for max score) using real Tavily search data
+    3. Create comprehensive search strategies (12+ for max score) covering different user intents
     4. Optimize for keyword difficulty vs search volume ratio to find "sweet spot" opportunities
     5. Consider seasonal trends, emerging technologies, and market gaps
 
-    The function should return a strategy dictionary with:
-    - primary_keywords: List of main keywords to target (mix of head, body, long-tail)
-    - competitor_domains: List of competitor websites found via search analysis
-    - search_strategies: List of search approaches for market research
-    - analysis_depth: Description of analysis approach
+    CRITICAL SCORING CRITERIA:
+    - Long-tail keywords (4+ words) score highest
+    - Commercial intent keywords ("buy", "price", "review") get bonuses
+    - Keyword diversity (informational + commercial + transactional) is rewarded
+    - Unique competitors from real search results preferred
+    - No duplicate or near-duplicate keywords (penalty applied)
 
     For AI/tech niches, focus on:
     - Emerging trends and early adopter keywords
     - Tool comparison keywords ("X vs Y")
     - Problem-solution keywords ("how to create X with AI")
     - Commercial intent keywords with buyer signals
+    - Year-specific positioning (2025, 2026) for early advantage
 
-    The goal is finding underserved markets with good traffic potential but manageable competition.
+    The goal is finding underserved markets with good traffic potential but manageable competition. Quality over quantity!
 
   language: "python"
   init_program_path:

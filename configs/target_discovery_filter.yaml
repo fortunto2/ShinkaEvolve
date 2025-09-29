@@ -1,7 +1,7 @@
 defaults:
   - _self_
   - database@_global_: island_small
-  - evolution@_global_: quick_test
+  - evolution@_global_: small_budget
   - task@_global_: target_discovery_filter
   - cluster@_global_: local
 

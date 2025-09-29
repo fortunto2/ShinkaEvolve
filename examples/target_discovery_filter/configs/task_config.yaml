@@ -3,7 +3,7 @@
 defaults:
   - /database: island_small
   - /cluster: local
-  - /evolution: quick_test
+  - /evolution: small_budget
   - _self_
 
 task_name: target_discovery_filter

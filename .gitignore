@@ -176,3 +176,13 @@ cython_debug/
 
 results/
 results_*/
+.tavily_cache/
+
+# Temporary test and debug files
+debug_*.py
+test_*.py
+quick_test_*.py
+simple_*.py
+*_cache/
+test_cache/
+full_content_cache/

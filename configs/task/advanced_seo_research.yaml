@@ -1,0 +1,89 @@
+seo_research_test_niches:
+  - "ai generate christmas card 2026"
+  - "ai christmas card generator"
+  - "personalized christmas cards ai"
+  - "custom christmas cards ai"
+  - "ai holiday card maker"
+
+evaluate_function:
+  _target_: examples.seo_research.advanced_evaluate.evaluate_advanced_seo_research_quality
+  program_path: ???
+  results_dir: ???
+  test_niches: ${seo_research_test_niches}
+  use_tavily_search: true
+  max_search_results: 5
+  enable_content_analysis: true
+
+distributed_job_config:
+  _target_: shinka.launch.LocalJobConfig
+  eval_program_path: shinka/eval_hydra.py
+  timeout: 300  # Longer timeout for content scraping
+
+evo_config:
+  task_sys_msg: |
+    Develop a cutting-edge SEO research strategy that combines keyword analysis, competitor content scraping, and strategic recommendations.
+
+    CRITICAL: Use the AdvancedSEOStrategy Pydantic model with content analysis:
+    ```python
+    strategy = AdvancedSEOStrategy(niche=niche_topic)
+
+    # Create KeywordOpportunity objects with intent classification
+    keyword_opp = KeywordOpportunity(
+        keyword="target keyword",
+        search_intent="commercial|informational|transactional",
+        difficulty_score=0.0-1.0,
+        opportunity_score=0.0-1.0,
+        word_count=len(keyword.split())
+    )
+    strategy.primary_keywords.append(keyword_opp)
+
+    # Analyze competitors with content extraction
+    content_extractor = ContentExtractor()
+    competitor_analysis = content_extractor.analyze_competitor(domain, niche, keywords)
+    strategy.competitor_analyses.append(competitor_analysis)
+
+    # Build comprehensive content strategy
+    strategy.content_strategy = ContentStrategy(
+        recommended_topics=[...],
+        content_gaps=[...],
+        content_angles=[...],
+        competitive_advantages=[...]
+    )
+
+    return strategy
+    ```
+
+    ADVANCED SCORING CRITERIA (much harder to achieve high scores):
+    - **Keyword Opportunities (25%)**: 20+ keywords with intent diversity, difficulty analysis
+    - **Competitor Analysis (20%)**: 15+ competitors with actual content scraping
+    - **Strategy Depth (15%)**: 15+ comprehensive search strategies
+    - **Keyword Quality (25%)**: Low competition (≤0.4), high opportunity (≥0.7), long-tail focus
+    - **Content Strategy (15%)**: 10+ content gaps, 8+ topics, 8+ angles, 5+ advantages
+
+    MANDATORY REQUIREMENTS:
+    1. **Real Content Analysis**: Scrape competitor websites, extract titles, headings, content
+    2. **Intent Classification**: Classify each keyword as commercial/informational/transactional
+    3. **Difficulty Scoring**: Calculate keyword difficulty based on competitor authority
+    4. **Content Gap Analysis**: Identify specific gaps in competitor content
+    5. **Strategic Recommendations**: Provide actionable content strategy
+
+    COMPETITIVE INTELLIGENCE FOCUS:
+    - Extract competitor page titles, meta descriptions, headings
+    - Analyze keyword usage in competitor content
+    - Identify content length and quality gaps
+    - Discover competitor ranking keywords via site: searches
+    - Calculate domain authority estimates
+    - Generate competitive advantage opportunities
+
+    TARGET: Score >0.85 requires comprehensive analysis across all dimensions with real content intelligence.
+
+  language: "python"
+  init_program_path:
+    _target_: shinka.utils.add_evolve_markers
+    save_dir: ${output_dir}
+    initial_file_path: examples/seo_research/advanced_initial.py
+    insert_start: advanced_seo_research_strategy
+    insert_end: advanced_seo_research_strategy
+  job_type: "local"
+
+exp_name: "shinka_advanced_seo_research"

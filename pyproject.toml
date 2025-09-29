@@ -26,7 +26,6 @@ dependencies = [
     "numpy",
     "pandas",
     "anthropic",
-    "requests",
     "boto3",
     "pydantic",
     "backoff",

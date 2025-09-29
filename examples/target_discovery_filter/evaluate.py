@@ -120,6 +120,9 @@ def run_shinka_eval(program_path: str = None, results_dir: str = None):
     # Calculate fitness metrics
     total_score = 0.0
 
+    last_result = None
+    last_candidate_count = 0
+
     for result in results:
         # Metrics:
         # 1. Diversity score (higher is better)
@@ -135,6 +138,8 @@ def run_shinka_eval(program_path: str = None, results_dir: str = None):
         # Combined score
         case_score = (diversity_score * 0.4 + selection_score * 0.3 + quality_score * 0.3)
         total_score += case_score
+        last_result = result
+        last_candidate_count = len(candidates)
 
         # Log details
         print(f"\n{'='*60}")
@@ -155,24 +160,37 @@ def run_shinka_eval(program_path: str = None, results_dir: str = None):
     print(f"OVERALL FITNESS: {fitness:.3f}")
     print(f"{'='*60}\n")
 
+    # Prepare metrics in the format expected by ShinkaEvolve (combined_score + public/private blocks)
+    if not last_result:
+        raise RuntimeError("No evaluation results produced by run_experiment")
+
+    public_metrics = {
+        "fitness": fitness,
+        "diversity_score": diversity_score,
+        "selection_score": selection_score,
+        "quality_score": quality_score,
+        "num_selected": num_selected,
+        "num_candidates": last_candidate_count,
+        "disease": last_result["disease"],
+        "selected_pdb_ids": last_result["selected_pdb_ids"],
+    }
+
+    metrics_payload = {
+        "combined_score": fitness,
+        "public": public_metrics,
+        "private": {},
+    }
+
     # Save metrics to JSON file (required by ShinkaEvolve)
     if results_dir:
         metrics_file = os.path.join(results_dir, "metrics.json")
-        metrics = {
-            "fitness": fitness,
-            "diversity_score": diversity_score,
-            "selection_score": selection_score,
-            "quality_score": quality_score,
-            "num_selected": num_selected,
-            "num_candidates": len(candidates),
-        }
 
         # Write correct.json for compatibility
         correct_file = os.path.join(results_dir, "correct.json")
         correct = fitness > 0.0  # Consider it correct if fitness > 0
 
         with open(metrics_file, "w") as f:
-            json.dump(metrics, f, indent=4)
+            json.dump(metrics_payload, f, indent=4)
         print(f"✓ Metrics saved to {metrics_file}")
 
         with open(correct_file, "w") as f:

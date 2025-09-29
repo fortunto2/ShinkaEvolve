@@ -1,0 +1,66 @@
+# @package _global_
+
+defaults:
+  - /database: island_small
+  - /cluster: local
+  - /evolution: quick_test
+  - _self_
+
+task_name: target_discovery_filter
+description: "Target Discovery PDB Filtering for Diabetes using real UniProt/PDB data"
+
+# Task-specific evaluation
+eval_script_path: examples/target_discovery_filter/evaluate.py
+eval_func_name: run_shinka_eval
+initial_program_path: examples/target_discovery_filter/initial.py
+
+# Fitness metrics and objectives
+fitness:
+  target_score: 0.85  # Target fitness for good performance
+  baseline_score: 0.74  # Current baseline with real data
+
+  metrics:
+    - name: diversity_score
+      weight: 0.4
+      description: "UniProt target diversity (unique proteins / total structures)"
+
+    - name: selection_efficiency
+      weight: 0.3
+      description: "Optimal number of structures selected (~10)"
+
+    - name: quality_score
+      weight: 0.3
+      description: "Quality check - valid structures with good relevance"
+
+# Algorithm configuration
+algorithm:
+  group_size: 100
+  top_k_per_group: 10
+  max_structures_per_uniprot: 3
+  target_num_structures: 10
+
+# Evolution targets
+evolution:
+  objectives:
+    - "Improve relevance scoring to better identify diabetes-related structures"
+    - "Optimize group filtering strategy for better consistency"
+    - "Enhance diversity while maintaining relevance"
+    - "Better balance between forward/reverse order filtering"
+
+  constraints:
+    - "Must select 5-15 PDB structures"
+    - "Must maintain diversity (min 3 unique UniProt IDs)"
+    - "Must prioritize diabetes therapeutic relevance"
+
+# Real data configuration
+data:
+  source: "bioservices (UniProt + PDB)"
+  proteins:
+    - P06213  # INSR - Insulin receptor
+    - P35557  # GCK - Glucokinase
+    - P37231  # PPARG - PPAR gamma
+    - P27487  # DPP4 - DPP-4
+    - P31639  # SLC5A2 - SGLT2
+
+  expected_candidates: 80-100
+  disease: "Diabetes"

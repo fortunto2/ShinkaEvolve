@@ -45,6 +45,7 @@ dependencies = [
     "markdown",
     "aiofiles",
     "tavily-python>=0.7.12",
+    "bioservices>=1.12.1",
 ]
 
 [tool.setuptools]

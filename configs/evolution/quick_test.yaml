@@ -6,7 +6,7 @@ evo_config:
   patch_type_probs:
     - 0.7
     - 0.3
-  num_generations: 2  # Very small for quick testing
+  num_generations: 3  # Very small for quick testing
   max_parallel_jobs: 1
   max_patch_attempts: 5
   llm_models:

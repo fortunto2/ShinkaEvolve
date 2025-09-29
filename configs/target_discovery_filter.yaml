@@ -1,0 +1,16 @@
+defaults:
+  - _self_
+  - database@_global_: island_small
+  - evolution@_global_: quick_test
+  - task@_global_: target_discovery_filter
+  - cluster@_global_: local
+
+verbose: false
+results_dir: results
+run_name: ${now:%Y.%m.%d}${now:%H%M%S}
+
+output_dir: ${results_dir}/${exp_name}/${run_name}
+
+hydra:
+  run:
+    dir: ${output_dir}

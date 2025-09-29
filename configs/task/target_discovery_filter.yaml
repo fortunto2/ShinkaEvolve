@@ -1,0 +1,57 @@
+evaluate_function:
+  _target_: examples.target_discovery_filter.evaluate.run_shinka_eval
+  program_path: ???
+  results_dir: ???
+
+distributed_job_config:
+  _target_: shinka.launch.LocalJobConfig
+  eval_program_path: "shinka/eval_hydra.py"
+  timeout: 180  # 3 minutes per evaluation
+
+evo_config:
+  task_sys_msg: |
+    You are an expert in computational drug discovery and bioinformatics, specializing in target discovery for therapeutic development.
+
+    This task implements Algorithm 1 (PDB Filtering) from the PharmAgents paper for identifying optimal protein structures for diabetes drug design.
+
+    Key Algorithm Components:
+    1. Group Filtering: Process PDB candidates in groups of 100, selecting top 10 per group
+    2. Reverse Order Consistency: Reduce sequence bias by processing forward and reverse
+    3. UniProt Diversity Filtering: Max 3 structures per protein to ensure broad target coverage
+
+    Current Performance (Baseline):
+    - Fitness: 0.740
+    - Diversity: 0.500 (4/5 proteins represented)
+    - Selected: 8 real PDB structures from bioservices
+
+    Real Data from UniProt/PDB:
+    - P06213: INSR - Insulin receptor (72 structures)
+    - P35557: GCK - Glucokinase (35 structures)
+    - P37231: PPARG - PPAR gamma (316 structures)
+    - P27487: DPP4 - Dipeptidyl peptidase 4 (107 structures)
+    - P31639: SLC5A2 - SGLT2 (8 structures)
+
+    Optimization Objectives:
+    1. Improve relevance scoring to better identify diabetes-therapeutic structures
+    2. Enhance group filtering strategy for better forward/reverse consistency
+    3. Optimize diversity vs relevance trade-off
+    4. Better keyword matching for therapeutic indicators (inhibitor, agonist, drug, treatment)
+    5. Consider protein-specific importance (e.g., INSR and DPP4 are key diabetes targets)
+
+    Target Performance:
+    - Fitness: 0.850+
+    - Diversity: 0.600+ (all 5 proteins if possible)
+    - Selected: ~10 structures with high clinical relevance
+
+    Be creative and consider:
+    - Weighted scoring based on protein therapeutic importance
+    - Enhanced text matching algorithms
+    - Adaptive group sizes
+    - Smart intersection strategies
+    - Clinical relevance indicators beyond simple keyword matching
+
+  language: "python"
+  init_program_path: "examples/target_discovery_filter/initial.py"
+  job_type: "local"
+
+exp_name: "target_discovery_filter"

@@ -13,6 +13,7 @@ Uses real bioservices data from UniProt and PDB databases.
 
 from typing import *
 from pydantic import BaseModel, Field
+from collections import Counter
 import hashlib
 import pandas as pd
 from bioservices import UniProt, PDB
@@ -53,47 +54,104 @@ def target_discovery_filter(pdb_candidates: List[PDBCandidate], disease: str) ->
     """
     # EVOLVE-BLOCK-START
 
-    # Stage 1: Group Filtering
-    all_top10_groups = []
-    group_size = 100
+    if not pdb_candidates:
+        return FilteredTarget(
+            selected_pdbs=[],
+            filtering_rationale=f"No suitable PDB structures found for {disease}",
+            diversity_score=0.0,
+        )
 
-    for i in range(0, len(pdb_candidates), group_size):
-        group = pdb_candidates[i:i + group_size]
+    # Clinical priorities for Type 2 diabetes (protein weights + minimum coverage)
+    priority_config: Dict[str, Dict[str, float]] = {
+        "P06213": {"weight": 1.35, "min": 1, "order": 0},  # INSR
+        "P27487": {"weight": 1.30, "min": 1, "order": 1},  # DPP4
+        "P31639": {"weight": 1.55, "min": 1, "order": 0},  # SGLT2
+        "P35557": {"weight": 1.20, "min": 1, "order": 2},  # GCK
+        "P37231": {"weight": 1.15, "min": 1, "order": 3},  # PPARG
+    }
 
-        # Forward selection
-        top10_forward = select_top_k_by_relevance(group, disease, k=10)
+    therapeutic_keywords = [
+        "inhibitor",
+        "agonist",
+        "antagonist",
+        "therapeutic",
+        "drug",
+        "treatment",
+        "co-crystal",
+        "co-crystallized",
+        "clinical",
+        "phase",
+        "candidate",
+        "efficacy",
+    ]
+    type2_terms = ["type 2", "t2d", "insulin resistance", "glycemic", "glucose"]
 
-        # Reverse selection for consistency
-        reversed_group = list(reversed(group))
-        top10_reversed = select_top_k_by_relevance(reversed_group, disease, k=10)
+    def determine_group_size(total: int) -> int:
+        if total <= 40:
+            return max(12, total)
+        if total <= 120:
+            return 40
+        if total <= 200:
+            return 60
+        return 100
 
-        # Intersection for consistency
-        intersection = find_intersection(top10_forward, top10_reversed)
+    # Stage 1: score enrichment + adaptive group filtering
+    enriched_candidates: List[PDBCandidate] = []
+    for candidate in pdb_candidates:
+        text = " ".join([candidate.description, candidate.abstract, candidate.ligand_name]).lower()
+        base_score = calculate_relevance_score(candidate, disease)
 
-        if not intersection:
-            # No intersection - take first from each
-            intersection = [top10_forward[0], top10_reversed[0]]
+        keyword_hits = sum(1 for kw in therapeutic_keywords if kw in text)
+        keyword_boost = 0.35 * keyword_hits
+        type2_boost = 0.45 if any(term in text for term in type2_terms) else 0.0
 
-        all_top10_groups.extend(intersection)
+        ligand_lower = candidate.ligand_name.lower() if candidate.ligand_name else ""
+        ligand_boost = 0.25 if any(tok in ligand_lower for tok in ["inhib", "agon", "drug"]) else 0.0
 
-    # Stage 2: Reverse Order Consistency on combined results
-    combined = all_top10_groups
-    reversed_combined = list(reversed(combined))
+        protein_weight = priority_config.get(candidate.uniprot_id, {}).get("weight", 1.0)
 
-    final_top10_forward = select_top_k_by_relevance(combined, disease, k=10)
-    final_top10_reversed = select_top_k_by_relevance(reversed_combined, disease, k=10)
+        enriched_score = (base_score + keyword_boost + type2_boost + ligand_boost) * protein_weight
+        candidate.relevance_score = enriched_score
+        enriched_candidates.append(candidate)
 
-    final_intersection = find_intersection(final_top10_forward, final_top10_reversed)
+    group_size = determine_group_size(len(enriched_candidates))
+    grouped_pool: List[PDBCandidate] = []
+    for i in range(0, len(enriched_candidates), group_size):
+        group = enriched_candidates[i : i + group_size]
+        if not group:
+            continue
+        top_k = min(12, len(group))
+        ranked_forward = sorted(group, key=lambda c: c.relevance_score, reverse=True)[:top_k]
+        ranked_reverse = sorted(
+            list(reversed(group)), key=lambda c: c.relevance_score, reverse=True
+        )[:top_k]
+        grouped_pool.extend(ranked_forward)
+        grouped_pool.extend(ranked_reverse)
 
-    if not final_intersection:
-        final_intersection = [final_top10_forward[0], final_top10_reversed[0]]
+    # Stage 2: combine forward/reverse selections and global top performers
+    global_top = sorted(enriched_candidates, key=lambda c: c.relevance_score, reverse=True)[:40]
+    combined_pool = deduplicate_by_pdb(global_top + grouped_pool)
 
-    # Stage 3: UniProt Filtering - max 3 PDBs per UniProt ID
-    filtered_results = uniprot_diversity_filter(final_intersection, max_per_uniprot=3)
+    # Stage 3: diversity-aware final selection
+    target_selection = 10
+    max_per_uniprot = 3
+    filtered_results = diversity_balanced_selection(
+        combined_pool, target_selection, max_per_uniprot, priority_config
+    )
 
-    # Calculate diversity score
-    unique_uniprots = len(set(pdb.uniprot_id for pdb in filtered_results))
-    diversity_score = unique_uniprots / len(filtered_results) if filtered_results else 0.0
+    if not filtered_results:
+        filtered_results = combined_pool[:target_selection]
+
+    # Ensure results sorted by relevance for presentation
+    filtered_results = sorted(filtered_results, key=lambda c: c.relevance_score, reverse=True)
+
+    unique_uniprots = len({pdb.uniprot_id for pdb in filtered_results})
+    if filtered_results:
+        share_ratio = unique_uniprots / len(filtered_results)
+        coverage_ratio = unique_uniprots / max(len(priority_config), 1)
+        diversity_score = min(1.0, 0.5 * share_ratio + 0.5 * coverage_ratio)
+    else:
+        diversity_score = 0.0
 
     rationale = generate_filtering_rationale(filtered_results, disease, diversity_score)
 
@@ -176,6 +234,74 @@ def uniprot_diversity_filter(candidates: List[PDBCandidate], max_per_uniprot: in
             uniprot_counts[uniprot_id] = count + 1
 
     return filtered
+
+
+def deduplicate_by_pdb(candidates: List[PDBCandidate]) -> List[PDBCandidate]:
+    """Remove duplicate PDB IDs while preserving order."""
+    seen: Set[str] = set()
+    unique: List[PDBCandidate] = []
+    for cand in candidates:
+        if cand.pdb_id in seen:
+            continue
+        unique.append(cand)
+        seen.add(cand.pdb_id)
+    return unique
+
+
+def diversity_balanced_selection(
+    candidates: List[PDBCandidate],
+    target_total: int,
+    max_per_uniprot: int,
+    priority_config: Dict[str, Dict[str, float]],
+) -> List[PDBCandidate]:
+    """
+    Greedy selection that maximizes diversity while respecting protein priorities.
+    """
+    if not candidates:
+        return []
+
+    priority_order = {
+        pid: cfg.get("order", idx)
+        for idx, (pid, cfg) in enumerate(priority_config.items())
+    }
+
+    sorted_candidates = sorted(candidates, key=lambda c: c.relevance_score, reverse=True)
+    selected: List[PDBCandidate] = []
+    counts: Counter[str] = Counter()
+
+    # Pass 1: ensure minimum coverage for priority proteins
+    for pid, cfg in priority_config.items():
+        required = int(cfg.get("min", 0))
+        if required <= 0:
+            continue
+        pid_candidates = [c for c in sorted_candidates if c.uniprot_id == pid]
+        for cand in pid_candidates[:required]:
+            if counts[cand.uniprot_id] >= max_per_uniprot:
+                continue
+            if cand in selected:
+                continue
+            selected.append(cand)
+            counts[cand.uniprot_id] += 1
+            if len(selected) >= target_total:
+                return selected
+
+    # Pass 2: fill remaining slots prioritizing underrepresented proteins
+    remaining = [c for c in sorted_candidates if c not in selected]
+    while remaining and len(selected) < target_total:
+        remaining.sort(
+            key=lambda c: (
+                counts[c.uniprot_id],
+                priority_order.get(c.uniprot_id, 99),
+                -c.relevance_score,
+            )
+        )
+        candidate = remaining.pop(0)
+        if counts[candidate.uniprot_id] >= max_per_uniprot:
+            continue
+        selected.append(candidate)
+        counts[candidate.uniprot_id] += 1
+
+    return selected
 
 
 def generate_filtering_rationale(selected: List[PDBCandidate], disease: str, diversity: float) -> str:

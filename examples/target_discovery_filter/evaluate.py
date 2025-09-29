@@ -1,7 +1,7 @@
 """
 Evaluation script for Target Discovery PDB Filtering.
 
-This script uses real bioservices data from UniProt and PDB for diabetes targets.
+This script uses real bioservices data from UniProt and PDB for Type 2 diabetes targets.
 """
 
 from typing import List, Dict, Any
@@ -9,18 +9,21 @@ from bioservices import UniProt, PDB
 from examples.target_discovery_filter.initial import run_experiment
 
 
+TYPE2_DISEASE_NAME = "Type 2 Diabetes"
+
+
 def fetch_real_diabetes_targets() -> List[Dict[str, Any]]:
     """
-    Fetch real protein targets for diabetes from UniProt and PDB.
+    Fetch real protein targets for Type 2 diabetes from UniProt and PDB.
 
-    Focus on known diabetes-related proteins like:
+    Focus on known Type 2 diabetes-related proteins like:
     - Insulin receptor (INSR)
     - Glucokinase (GCK)
     - PPAR-gamma (PPARG)
     - DPP-4 (DPP4)
     - SGLT2 (SLC5A2)
     """
-    print("Fetching real diabetes targets from UniProt/PDB...")
+    print("Fetching real Type 2 diabetes targets from UniProt/PDB...")
 
     uniprot = UniProt(verbose=False)
     pdb_service = PDB(verbose=False)
@@ -59,8 +62,13 @@ def fetch_real_diabetes_targets() -> List[Dict[str, Any]]:
 
                 try:
                     # Create candidate with real PDB ID
-                    description = f"Structure of {protein_name}"
-                    abstract = f"Diabetes therapeutic target: {protein_name}. Crystal structure determination for drug design."
+                    description = (
+                        f"Type 2 diabetes therapeutic structure of {protein_name}"
+                    )
+                    abstract = (
+                        f"Type 2 diabetes therapeutic target: {protein_name}. "
+                        "Crystal structure determination for glucose control drug design."
+                    )
                     ligand = f"ligand-{pdb_id}"
 
                     candidates.append({
@@ -110,7 +118,7 @@ def run_shinka_eval(program_path: str = None, results_dir: str = None):
 
     # Create test case
     test_cases = [{
-        "disease": "Diabetes",
+        "disease": TYPE2_DISEASE_NAME,
         "candidates": candidates
     }]
 

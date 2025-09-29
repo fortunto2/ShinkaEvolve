@@ -2,7 +2,7 @@
 Advanced Pydantic models for SEO research with competitor content analysis.
 """
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Set
 from pydantic import BaseModel, Field
 from datetime import datetime
 

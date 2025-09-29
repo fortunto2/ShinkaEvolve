@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Tuple, Optional
+from typing import *
 import json
 import re
 from urllib.parse import urlparse
@@ -8,7 +8,7 @@ from examples.seo_research.models import (
     AdvancedSEOStrategy,
     KeywordOpportunity,
     CompetitorAnalysis,
-    ContentStrategy
+    ContentStrategy,
 )
 from examples.seo_research.content_extractor import ContentExtractor
 
@@ -31,14 +31,12 @@ def advanced_seo_research_strategy(niche_topic: str) -> AdvancedSEOStrategy:
         f"{niche_topic} price comparison",
         f"cheap {niche_topic} deals",
         f"{niche_topic} reviews 2026",
-
         # Informational intent
         f"how to use {niche_topic}",
         f"{niche_topic} tutorial guide",
         f"what is {niche_topic}",
         f"{niche_topic} tips and tricks",
         f"learn {niche_topic} fast",
-
         # Transactional intent
         f"create {niche_topic} online",
         f"{niche_topic} generator free",
@@ -49,9 +47,19 @@ def advanced_seo_research_strategy(niche_topic: str) -> AdvancedSEOStrategy:
 
     # Create keyword opportunities with intent analysis
     for template in keyword_templates:
-        intent = "commercial" if any(word in template for word in ["buy", "best", "price", "cheap", "reviews"]) else \
-                "informational" if any(word in template for word in ["how to", "what is", "tutorial", "learn", "tips"]) else \
-                "transactional"
+        intent = (
+            "commercial"
+            if any(
+                word in template
+                for word in ["buy", "best", "price", "cheap", "reviews"]
+            )
+            else "informational"
+            if any(
+                word in template
+                for word in ["how to", "what is", "tutorial", "learn", "tips"]
+            )
+            else "transactional"
+        )
 
         opportunity = KeywordOpportunity(
             keyword=template,
@@ -59,7 +67,7 @@ def advanced_seo_research_strategy(niche_topic: str) -> AdvancedSEOStrategy:
             difficulty_score=0.5,  # Will be refined through evolution
             opportunity_score=0.7,  # Will be refined through evolution
             competing_domains=[],
-            word_count=len(template.split())
+            word_count=len(template.split()),
         )
         strategy.primary_keywords.append(opportunity)
 
@@ -93,7 +101,9 @@ def advanced_seo_research_strategy(niche_topic: str) -> AdvancedSEOStrategy:
 
     target_keywords = [kw.keyword for kw in strategy.primary_keywords]
 
-    for domain in list(all_competitors)[:3]:  # Limit to top 3 competitors for faster testing
+    for domain in list(all_competitors)[
+        :3
+    ]:  # Limit to top 3 competitors for faster testing
         try:
             competitor_analysis = content_extractor.analyze_competitor(
                 domain, niche_topic, target_keywords
@@ -109,7 +119,10 @@ def advanced_seo_research_strategy(niche_topic: str) -> AdvancedSEOStrategy:
         total_authority = 0
 
         for comp in strategy.competitor_analyses:
-            if any(kw.lower() in keyword_opp.keyword.lower() for kw in comp.ranking_keywords):
+            if any(
+                kw.lower() in keyword_opp.keyword.lower()
+                for kw in comp.ranking_keywords
+            ):
                 competing_domains.append(comp.domain)
                 total_authority += comp.authority_score
 
@@ -146,7 +159,9 @@ def advanced_seo_research_strategy(niche_topic: str) -> AdvancedSEOStrategy:
         if comp.content_quality < 0.6:
             competitive_advantages.append(f"Higher quality content than {comp.domain}")
         if comp.keyword_overlap < 0.3:
-            competitive_advantages.append(f"Better keyword targeting than {comp.domain}")
+            competitive_advantages.append(
+                f"Better keyword targeting than {comp.domain}"
+            )
 
     # Generate content strategy
     strategy.content_strategy = ContentStrategy(
@@ -155,7 +170,7 @@ def advanced_seo_research_strategy(niche_topic: str) -> AdvancedSEOStrategy:
             f"{niche_topic} comparison matrix",
             f"{niche_topic} implementation tutorial",
             f"{niche_topic} ROI calculator",
-            f"{niche_topic} best practices checklist"
+            f"{niche_topic} best practices checklist",
         ],
         content_gaps=list(set(all_content_gaps)),
         content_angles=[
@@ -163,10 +178,10 @@ def advanced_seo_research_strategy(niche_topic: str) -> AdvancedSEOStrategy:
             f"Data-driven {niche_topic} comparisons",
             f"Step-by-step {niche_topic} implementation",
             f"Cost-effective {niche_topic} solutions",
-            f"Future-proof {niche_topic} strategies"
+            f"Future-proof {niche_topic} strategies",
         ],
         target_keywords=[kw.keyword for kw in strategy.get_top_opportunities(10)],
-        competitive_advantages=list(set(competitive_advantages))
+        competitive_advantages=list(set(competitive_advantages)),
     )
 
     # Set analysis depth
@@ -194,7 +209,7 @@ def perform_advanced_seo_research(niches: List[str]) -> List[Dict[str, Any]]:
             "competitor_count": len(strategy.competitor_analyses),
             "content_gaps_count": len(strategy.get_content_gaps()),
             "top_opportunities_count": len(strategy.get_top_opportunities()),
-            "low_competition_count": len(strategy.get_low_competition_keywords())
+            "low_competition_count": len(strategy.get_low_competition_keywords()),
         }
 
         results.append(research_result)

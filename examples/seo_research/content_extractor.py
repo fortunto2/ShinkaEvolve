@@ -3,7 +3,7 @@ Content extraction utilities for competitor analysis using Tavily API.
 """
 
 import re
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Set
 from urllib.parse import urlparse
 from datetime import datetime
 

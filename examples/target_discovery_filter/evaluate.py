@@ -89,12 +89,15 @@ def run_shinka_eval(program_path: str = None, results_dir: str = None):
     Main evaluation function called by ShinkaEvolve.
 
     Args:
-        program_path: Path to the program to evaluate (unused, uses initial.py)
-        results_dir: Directory for results (unused)
+        program_path: Path to the program to evaluate
+        results_dir: Directory to save metrics.json
 
     Returns:
-        float: Fitness score (0-1, higher is better)
+        None (writes metrics to results_dir/metrics.json)
     """
+    import json
+    import os
+
     print("\n" + "="*60)
     print("Target Discovery Filter - Diabetes Example")
     print("="*60 + "\n")
@@ -151,6 +154,30 @@ def run_shinka_eval(program_path: str = None, results_dir: str = None):
     print(f"\n{'='*60}")
     print(f"OVERALL FITNESS: {fitness:.3f}")
     print(f"{'='*60}\n")
+
+    # Save metrics to JSON file (required by ShinkaEvolve)
+    if results_dir:
+        metrics_file = os.path.join(results_dir, "metrics.json")
+        metrics = {
+            "fitness": fitness,
+            "diversity_score": diversity_score,
+            "selection_score": selection_score,
+            "quality_score": quality_score,
+            "num_selected": num_selected,
+            "num_candidates": len(candidates),
+        }
+
+        # Write correct.json for compatibility
+        correct_file = os.path.join(results_dir, "correct.json")
+        correct = fitness > 0.0  # Consider it correct if fitness > 0
+
+        with open(metrics_file, "w") as f:
+            json.dump(metrics, f, indent=4)
+        print(f"✓ Metrics saved to {metrics_file}")
+
+        with open(correct_file, "w") as f:
+            json.dump({"correct": correct, "error": None}, f, indent=4)
+        print(f"✓ Correct status saved to {correct_file}\n")
 
     return fitness
 

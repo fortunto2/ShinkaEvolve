@@ -116,6 +116,27 @@ Each example in `examples/` contains:
 2. **Pydantic Models**: Use Pydantic BaseModel for structured data validation and JSON serialization
 3. **External Service Integration**: Implement caching for API calls (see TavilySearchService example)
 4. **EVOLVE-BLOCK Placement**: Mark only core algorithm logic, not utility functions
+5. **Evaluation Interface**: Implement proper ShinkaEvolve evaluation interface with metrics.json output
+
+### Directory Structure Template
+
+```
+examples/your_example/
+├── initial.py              # Algorithm with EVOLVE-BLOCK markers
+├── evaluate.py             # Evaluation function with metrics output
+├── README.md               # Full documentation
+├── QUICKSTART.md           # Quick start guide (optional)
+└── configs/
+    └── task_config.yaml    # Legacy task config (optional, for reference)
+```
+
+Main configs in project root:
+```
+configs/
+├── your_example.yaml              # Main launch config
+└── task/
+    └── your_example.yaml          # Task-specific config with system message
+```
 
 ### Example Structure Template
 ```python

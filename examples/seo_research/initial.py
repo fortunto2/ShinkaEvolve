@@ -1,5 +1,6 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Tuple, Optional, Union, AnyStr
 from urllib.parse import urlparse
+import re, time
 from pydantic import BaseModel, Field
 
 from shinka.utils.tavily_search import TavilySearchService
@@ -28,6 +29,12 @@ def seo_research_strategy(niche_topic: str) -> SEOStrategy:
     SEO research strategy for finding profitable niches and keywords.
     This function will be evolved to optimize keyword research and competitor analysis.
     Returns a Pydantic-validated SEO strategy.
+
+    Available imports: List, Dict, Any, Tuple, Optional, Union from typing
+
+    Example type hints:
+    - def helper_func(data: List[str]) -> Tuple[int, float]:
+    - def process_keywords(keywords: List[str]) -> Optional[Dict[str, Any]]:
     """
     # EVOLVE-BLOCK-START
     # Initialize strategy with required fields

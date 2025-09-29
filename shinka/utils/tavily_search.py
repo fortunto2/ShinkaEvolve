@@ -1,11 +1,9 @@
 import logging
 
 from tavily import TavilyClient
-
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
-
-from pydantic import BaseModel, Field
 
 
 class SourceData(BaseModel):
@@ -29,6 +27,8 @@ class TavilySearchService:
         self._client = TavilyClient(
             api_key=api_key, api_base_url="http://localhost:8013"
         )
+        # Simple in-memory cache
+        self._cache = {}
 
     @staticmethod
     def rearrange_sources(
@@ -55,7 +55,16 @@ class TavilySearchService:
         Returns:
             Tuple with tavily answer and list of SourceData
         """
-        max_results = max_results or self._config.search.max_results
+        max_results = max_results or 5  # Default fallback
+
+        # Create cache key
+        cache_key = f"{query}_{max_results}_{include_raw_content}"
+
+        # Check cache first
+        if cache_key in self._cache:
+            logger.info(f"🎯 Cache hit for: '{query}' (max_results={max_results})")
+            return self._cache[cache_key]
+
         logger.info(f"🔍 Tavily search: '{query}' (max_results={max_results})")
 
         # Execute search through Tavily
@@ -67,6 +76,10 @@ class TavilySearchService:
 
         # Convert results to SourceData
         sources = self._convert_to_source_data(response)
+
+        # Store in cache
+        self._cache[cache_key] = sources
+        logger.info(f"💾 Cached result for: '{query}'")
 
         return sources
 

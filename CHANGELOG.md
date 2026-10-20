@@ -37,6 +37,10 @@ All notable changes to `shinka-evolve` are documented in this file.
 
 ### Fixed
 
+- Fixed the per-job timeout (`LocalJobConfig.time`) being measured from the start of
+  the LLM proposal instead of the evaluation. With slow proposers such as headless
+  agents (minutes per proposal), candidates were killed the moment their evaluation
+  launched (score 0, empty job log), while fast proposers' candidates survived.
 - Fixed Anthropic response parsing to dispatch by content-block type, avoiding
   crashes and truncated output for redacted, thinking-only, and multi-block
   responses in PR #188. Thanks @Atharva-Kanherkar.
